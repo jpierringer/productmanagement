@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Roadmap">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Product Roadmap</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e3e8ef;--acc:#2563eb;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--chip:#eef2f7;--shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.05);--lw:118px}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--card:#141a2e;--ink:#e6e9f2;--mut:#8b95ad;--line:#232b45;--acc:#5b8cff;--chip:#1c2440;--shadow:none}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+body.noscroll{overflow:hidden}
+button{font:inherit;cursor:pointer}
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:24px;margin:0;flex:1;letter-spacing:-.02em}
+main{padding:0 16px calc(96px + env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;background:none;border:0;color:var(--mut);padding:8px 0 6px;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button.on{color:var(--acc)}
+nav.tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:14px;margin-bottom:10px;border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);border-left:4px solid var(--c)}
+.stat b{font-size:28px;display:block;letter-spacing:-.02em;line-height:1.1}
+.stat span{color:var(--mut);font-size:12px}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 8px;gap:8px}
+.sec h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:0}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px;user-select:none}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.segc{display:flex;background:var(--chip);border-radius:10px;padding:3px;margin-bottom:8px}
+.segc button{flex:1;border:0;background:none;padding:7px 4px;border-radius:8px;font-size:13px;color:var(--mut)}
+.segc button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:650;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);white-space:nowrap;flex:none}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c)}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);white-space:nowrap}
+.row{display:flex;align-items:center;gap:8px}
+.li{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;box-shadow:var(--shadow)}
+.li .grow{flex:1;min-width:0}
+.pn{font-weight:650}
+.mut{color:var(--mut);font-size:13px}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.fab{position:fixed;right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--acc);color:#fff;border:0;font-size:30px;line-height:1;box-shadow:0 6px 20px rgba(37,99,235,.35);z-index:25}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+input[type=color]{padding:4px;height:44px}
+textarea{min-height:84px;resize:vertical}
+.field{margin-bottom:12px}
+label.l{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:4px}
+.fh{font-size:12px;font-weight:700;margin:20px 0 10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);border-bottom:1px solid var(--line);padding-bottom:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;font-size:15px;background:var(--chip);color:var(--ink)}
+.btn.pri{background:var(--acc);color:#fff}
+.btn.danger{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.btn.ghost{background:none;color:var(--acc);padding:8px 4px}
+.btn.sm{padding:7px 11px;font-size:13px}
+.btn.block{width:100%;margin-top:10px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+/* timeline */
+.tl{overflow:auto;max-height:64vh;border-radius:14px;background:var(--card);border:1px solid var(--line);position:relative;overscroll-behavior:contain;box-shadow:var(--shadow)}
+.tl-in{position:relative}
+.tl-head{position:sticky;top:0;z-index:4;display:flex;background:var(--card);border-bottom:1px solid var(--line)}
+.tl-corner{position:sticky;left:0;z-index:5;width:var(--lw);flex:none;background:var(--card);border-right:1px solid var(--line);font-size:10.5px;color:var(--mut);padding:12px 8px}
+.tl-years{position:relative;height:40px;flex:none}
+.tl-y{position:absolute;top:4px;font-size:12px;font-weight:700}
+.tl-q{position:absolute;top:22px;font-size:10px;color:var(--mut)}
+.tl-now{position:absolute;top:4px;font-size:10px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:1px 5px;transform:translateX(-50%);z-index:1}
+.tl-row{display:flex;height:44px;border-bottom:1px solid var(--line)}
+.tl-lab{position:sticky;left:0;z-index:2;width:var(--lw);flex:none;background:var(--card);border-right:1px solid var(--line);padding:6px 8px;overflow:hidden}
+.tl-lab b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-lab span{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.tl-track{position:relative;flex:none}
+.tl-grp{display:flex;height:28px;background:var(--chip);border-bottom:1px solid var(--line)}
+.tl-glab{position:sticky;left:0;z-index:2;background:var(--chip);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:7px 8px;white-space:nowrap}
+.bar{position:absolute;top:15px;height:14px;border-radius:7px}
+.mk{position:absolute;top:15px;width:12px;height:12px;transform:translateX(-6px) rotate(45deg);border:2px solid var(--card);border-radius:2px;z-index:1}
+.tl-next{position:absolute;top:12px;font-size:11px;font-weight:700;color:var(--acc);white-space:nowrap;background:color-mix(in srgb,var(--acc) 12%,var(--card));padding:2px 6px;border-radius:6px}
+.tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);opacity:.55;z-index:1;pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--mut);margin:8px 2px}
+.legend i{display:inline-block;width:16px;height:8px;border-radius:4px;margin-right:4px;vertical-align:middle}
+/* sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(2,6,23,.45);z-index:40}
+.sheet{position:fixed;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top) + 26px);background:var(--bg);border-radius:18px 18px 0 0;z-index:41;display:flex;flex-direction:column;max-width:760px;margin:0 auto}
+.sheet.anim{animation:up .26s ease-out}.sheet-bg.anim{animation:fade .2s}
+.sheet-h{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.sheet-h h3{flex:1;margin:0;font-size:16.5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-h>div{min-width:70px}
+.sheet-b{overflow-y:auto;padding:16px 16px calc(36px + env(safe-area-inset-bottom));flex:1;-webkit-overflow-scrolling:touch}
+@keyframes up{from{transform:translateY(100%)}}@keyframes fade{from{opacity:0}}
+.hero h2{margin:0 0 2px;font-size:24px;letter-spacing:-.02em}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kv span{display:block;font-size:11.5px;color:var(--mut)}
+.kv b{font-weight:600;font-size:14px}
+.kv small{display:block;font-size:11.5px;color:var(--mut)}
+.stepper{display:flex;gap:4px;margin:10px 0 4px}
+.stepper i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.stepl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut)}
+.impact{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.impact:first-child{border-top:0;padding-top:0}
+.impact .t{width:92px;flex:none;font-weight:600;font-size:13.5px}
+.cmp{width:100%;border-collapse:collapse;font-size:13px}
+.cmp td,.cmp th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cmp th{font-size:11.5px;color:var(--mut);font-weight:600}
+.cmp tr.chg td{background:color-mix(in srgb,var(--warn) 11%,transparent)}
+.cmp td:first-child{color:var(--mut);width:28%}
+.prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex:1}
+.prog i{display:block;height:100%;background:var(--ok);border-radius:3px}
+.ac{display:grid;grid-template-columns:1fr 22px 1fr;gap:6px;align-items:stretch}
+.ac .mini{background:var(--chip);border-radius:10px;padding:8px 10px;min-width:0}
+.ac .arr{display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:18px}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:60;font-size:14px;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.empty{text-align:center;color:var(--mut);padding:28px 10px;font-size:14px}
+.banner{background:color-mix(in srgb,var(--warn) 14%,transparent);border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 12px}
+.tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;background:var(--chip);color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.ev{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ev .dt{width:58px;flex:none;font-size:12px;color:var(--mut);text-align:right;padding-top:1px}
+.mig{display:flex;align-items:center;gap:8px;margin-top:8px}
+.mig select{padding:7px 30px 7px 10px;font-size:14px;width:auto;flex:1}
+.center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.center .card{width:100%;max-width:380px}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet"></div>
+<div id="toast"></div>
+<script>
+/* =====================================================================
+   CONFIG — paste your Supabase project URL and anon (public) key here.
+   Leave blank to run in Demo mode (sample data stored on this device),
+   or enter them on the "More" tab to connect without editing this file.
+   ===================================================================== */
+const CONFIG = { SUPABASE_URL: '', SUPABASE_ANON_KEY: '', SCHEMA: 'roadmap' };
+
+/* ---------- constants ---------- */
+const LIFECYCLE=[
+ {k:'evaluating',l:'Evaluating',c:'#94a3b8'},{k:'onboarding',l:'Onboarding',c:'#8b5cf6'},
+ {k:'active',l:'Active',c:'#16a34a'},{k:'nrnd',l:'NRND',c:'#d97706'},
+ {k:'ltb',l:'Last-time buy',c:'#ea580c'},{k:'eol',l:'End of life',c:'#dc2626'},
+ {k:'rejected',l:'Not onboarded',c:'#6b7280'}];
+const LC=Object.fromEntries(LIFECYCLE.map(x=>[x.k,x]));
+const RANK={evaluating:0,onboarding:1,active:2,nrnd:3,ltb:4,eol:5};
+const CATEGORIES=[['controller','Controllers'],['telematics','Telematics'],['module','Modules'],['sensor','Sensors'],['display','Displays'],['other','Other']];
+const CATS1={controller:'Controller',telematics:'Telematics',module:'Module',sensor:'Sensor',display:'Display',other:'Other'};
+const IMPACT={none:{l:'None',c:'#16a34a'},minor:{l:'Minor',c:'#d97706'},major:{l:'Major',c:'#dc2626'}};
+const KIND={drop_in:'Drop-in',form_fit:'Form-fit',redesign:'Redesign'};
+const MIG=[['not_started','Not started'],['notified','Customer notified'],['evaluating','Evaluating'],['sampling','Sampling'],['validating','Validating'],['released','Released to production'],['complete','Complete'],['at_risk','At risk']];
+const MIGC={not_started:'#94a3b8',notified:'#0ea5e9',evaluating:'#8b5cf6',sampling:'#6366f1',validating:'#d97706',released:'#16a34a',complete:'#16a34a',at_risk:'#dc2626'};
+const EVK=[['announcement','Supplier announcement'],['pcn','PCN / change notice'],['release','Release'],['nrnd','NRND'],['ltb','Last-time buy'],['eol','End of life'],['milestone','Milestone'],['note','Note']];
+const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events'];
+const LW=118, MW=24;
+
+/* ---------- state ---------- */
+const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
+  f:{group:'category',hide:new Set(),showEol:true},pf:{q:'',phase:'all',cat:'all'},tlScroll:null};
+TABLES.forEach(t=>S.data[t]=[]);
+
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Math.random().toString(36).slice(2)+Date.now();
+const byId=(t,id)=>S.data[t].find(x=>x.id===id);
+const today=new Date();today.setHours(0,0,0,0);
+const iso=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+const rel=m=>iso(new Date(today.getFullYear(),today.getMonth()+m,1));
+function d(s){if(!s)return null;const[y,m,dd]=String(s).slice(0,10).split('-').map(Number);return new Date(y,m-1,dd)}
+const fmt=s=>s?d(s).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'—';
+const fmtMY=s=>s?d(s).toLocaleDateString(undefined,{month:'short',year:'2-digit'}):'—';
+const daysUntil=s=>Math.round((d(s)-today)/864e5);
+function relTxt(s){if(!s)return'';const n=daysUntil(s),a=Math.abs(n);if(n===0)return'today';const t=a<60?a+' days':Math.round(a/30.4)+' mo';return n>0?'in '+t:t+' ago'}
+const canEdit=()=>S.role==='editor'||S.role==='admin';
+const sup=p=>byId('suppliers',p?.supplier_id);
+const pnOf=id=>byId('products',id)?.part_number||'?';
+function phase(p){
+  if(p.lifecycle==='rejected')return'rejected';
+  let r=RANK[p.lifecycle]??0;
+  if(p.eol_date&&d(p.eol_date)<=today)r=Math.max(r,5);
+  else if(p.ltb_date&&d(p.ltb_date)<=today)r=Math.max(r,4);
+  else if(p.nrnd_date&&d(p.nrnd_date)<=today)r=Math.max(r,3);
+  return Object.keys(RANK).find(k=>RANK[k]===r);
+}
+const badge=k=>{const x=LC[k]||LC.evaluating;return`<span class="badge" style="--c:${x.c}">${x.l}</span>`};
+const impPill=(lab,k)=>{const x=IMPACT[k]||IMPACT.none;return`<span class="pill" style="--c:${x.c}">${lab}: ${x.l}</span>`};
+const migBadge=k=>`<span class="badge" style="--c:${MIGC[k]||'#94a3b8'}">${esc((MIG.find(m=>m[0]===k)||[,k])[1])}</span>`;
+function nextMilestone(p){
+  for(const[k,l]of[['nrnd_date','NRND'],['ltb_date','LTB'],['eol_date','EOL']]){if(p[k]&&d(p[k])>=today)return{l,date:p[k]}}
+  if(['evaluating','onboarding'].includes(p.lifecycle)){if(p.supplier_release_date&&d(p.supplier_release_date)>=today)return{l:'Release',date:p.supplier_release_date};if(p.onboard_date&&d(p.onboard_date)>=today)return{l:'Onboard',date:p.onboard_date}}
+  return null;
+}
+function needsMig(cp){
+  if(['complete'].includes(cp.transition_status))return false;
+  const p=byId('products',cp.product_id);if(!p)return false;
+  return ['nrnd','ltb','eol'].includes(phase(p))||!!cp.transition_id;
+}
+function toast(msg){const t=$('#toast');t.innerHTML=`<div class="toast">${esc(msg)}</div>`;clearTimeout(toast.h);toast.h=setTimeout(()=>t.innerHTML='',2600)}
+function errMsg(e){let m=e?.message||String(e);if(/schema/i.test(m)&&/must be one of|not exposed|Invalid schema/i.test(m))m+=' — add "roadmap" to Exposed schemas in Supabase API settings.';return m}
+
+/* ---------- data layer (Supabase or local demo) ---------- */
+function cfg(){let s={};try{s=JSON.parse(localStorage.getItem('rm_cfg')||'{}')}catch(e){}return{url:CONFIG.SUPABASE_URL||s.url||'',key:CONFIG.SUPABASE_ANON_KEY||s.key||'',hard:!!CONFIG.SUPABASE_URL}}
+const Demo={key:'rm_demo_v1',
+  load(){let x=null;try{x=JSON.parse(localStorage.getItem(this.key))}catch(e){}if(!x){x=seed();this.save(x)}TABLES.forEach(t=>x[t]=x[t]||[]);return x},
+  save(x){try{localStorage.setItem(this.key,JSON.stringify(x))}catch(e){}}};
+async function loadAll(){
+  if(S.mode==='demo'){S.data=Demo.load();return}
+  const res=await Promise.all(TABLES.map(t=>S.sb.from(t).select('*')));
+  res.forEach((r,i)=>{if(r.error)throw r.error;S.data[TABLES[i]]=r.data||[]});
+}
+function clean(row){const o={};for(const[k,v]of Object.entries(row)){if(['created_at','updated_at','updated_by'].includes(k)||v===undefined)continue;o[k]=v===''?null:v}return o}
+async function save(table,row){
+  row=clean(row);
+  if(S.mode==='demo'){
+    const L=S.data[table],now=new Date().toISOString();
+    if(table==='customer_products'&&L.some(x=>x.id!==row.id&&x.customer_id===row.customer_id&&x.product_id===row.product_id))throw new Error('That customer already has this product.');
+    if(row.id){const i=L.findIndex(x=>x.id===row.id);L[i]={...L[i],...row,updated_at:now}}
+    else{row.id=uid();row.created_at=row.updated_at=now;L.push(row)}
+    Demo.save(S.data);return row;
+  }
+  const id=row.id;delete row.id;
+  const q=id?S.sb.from(table).update(row).eq('id',id).select().single():S.sb.from(table).insert(row).select().single();
+  const{data,error}=await q;if(error)throw error;
+  const L=S.data[table],i=L.findIndex(x=>x.id===data.id);if(i>=0)L[i]=data;else L.push(data);return data;
+}
+async function remove(table,id){
+  if(S.mode==='demo'){
+    if(table==='products'&&S.data.customer_products.some(c=>c.product_id===id))throw new Error('Remove this product from its customers first.');
+    if(table==='suppliers'&&S.data.products.some(p=>p.supplier_id===id))throw new Error('This supplier still has products.');
+    S.data[table]=S.data[table].filter(x=>x.id!==id);
+    if(table==='products'){S.data.transitions=S.data.transitions.filter(t=>t.from_product_id!==id&&t.to_product_id!==id);S.data.events=S.data.events.filter(e=>e.product_id!==id)}
+    if(table==='suppliers')S.data.events=S.data.events.filter(e=>e.supplier_id!==id);
+    if(table==='customers')S.data.customer_products=S.data.customer_products.filter(c=>c.customer_id!==id);
+    if(table==='transitions')S.data.customer_products.forEach(c=>{if(c.transition_id===id)c.transition_id=null});
+    Demo.save(S.data);return;
+  }
+  const{error}=await S.sb.from(table).delete().eq('id',id);
+  if(error){if(error.code==='23503')throw new Error('Still in use elsewhere (e.g. customers or products) — remove those links first.');throw error}
+  await loadAll();
+}
+
+/* ---------- sample data for demo mode ---------- */
+function seed(){
+  const now=new Date().toISOString(),mk=o=>({id:uid(),created_at:now,updated_at:now,...o});
+  const stw=mk({name:'STW GmbH',color:'#2563eb',country:'Germany',roadmap_cadence:'Quarterly roadmap review'}),
+        tro=mk({name:'Trombetta',color:'#db2777',country:'USA'}),
+        mar=mk({name:'Marlin Technologies',color:'#0d9488',notes:'New supplier — line card coming soon'});
+  const markets=[['Agriculture','active'],['Construction','active'],['Mining','active'],['Submarine','active'],['Utility vehicles','considering']].map(([name,status])=>mk({name,status}));
+  const P=o=>mk({markets:[],...o});
+  const c200=P({supplier_id:stw.id,part_number:'C-200',name:'Mobile controller, 32 I/O (sample)',category:'controller',lifecycle:'nrnd',supplier_release_date:rel(-62),onboard_date:rel(-58),nrnd_date:rel(-4),ltb_date:rel(5),eol_date:rel(14),markets:['Agriculture','Construction','Mining'],software_platform:'CODESYS V3.5 SP16',connector:'2× 48-pin',length_mm:180,width_mm:140,height_mm:42,weight_g:520,mounting:'4× M6',ip_rating:'IP67'});
+  const c300=P({supplier_id:stw.id,part_number:'C-300',name:'Mobile controller, 48 I/O (sample)',category:'controller',lifecycle:'active',supplier_release_date:rel(-15),onboard_date:rel(-10),markets:['Agriculture','Construction','Mining','Utility vehicles'],software_platform:'CODESYS V3.5 SP19',connector:'2× 48-pin (revised pinout)',length_mm:188,width_mm:140,height_mm:42,weight_g:560,mounting:'4× M6',ip_rating:'IP67 / IP69K'});
+  const c400=P({supplier_id:stw.id,part_number:'C-400S',name:'Safety controller, PL d (sample)',category:'controller',lifecycle:'evaluating',supplier_release_date:rel(6),markets:['Construction','Mining'],software_platform:'CODESYS Safety',connector:'3× 40-pin',length_mm:210,width_mm:150,height_mm:45});
+  const t10=P({supplier_id:stw.id,part_number:'T-10',name:'Telematics gateway, 4G (sample)',category:'telematics',lifecycle:'ltb',supplier_release_date:rel(-74),onboard_date:rel(-70),nrnd_date:rel(-11),ltb_date:rel(-1),eol_date:rel(8),markets:['Agriculture','Construction','Mining'],software_platform:'Cloud API v1 (REST)',connector:'1× 18-pin + 2× FAKRA',length_mm:150,width_mm:110,height_mm:38,weight_g:380,ip_rating:'IP67'});
+  const t20=P({supplier_id:stw.id,part_number:'T-20',name:'Telematics gateway, LTE-M/5G (sample)',category:'telematics',lifecycle:'active',supplier_release_date:rel(-9),onboard_date:rel(-5),markets:['Agriculture','Construction','Mining'],software_platform:'Cloud API v2 (MQTT)',connector:'1× 18-pin + 2× FAKRA',length_mm:150,width_mm:110,height_mm:38,weight_g:395,ip_rating:'IP67'});
+  const io16=P({supplier_id:stw.id,part_number:'IO-16',name:'CAN I/O expansion module (sample)',category:'module',lifecycle:'active',supplier_release_date:rel(-42),onboard_date:rel(-39),markets:['Agriculture','Construction','Mining','Submarine'],software_platform:'CANopen',connector:'1× 26-pin',length_mm:120,width_mm:90,height_mm:35});
+  const pdm8=P({supplier_id:tro.id,part_number:'PDM-8',name:'Power distribution module (sample)',category:'module',lifecycle:'active',supplier_release_date:rel(-32),onboard_date:rel(-27),nrnd_date:rel(9),markets:['Construction','Utility vehicles'],software_platform:'Fixed logic',connector:'Ring terminals + 12-pin',length_mm:160,width_mm:120,height_mm:60});
+  const pdm12=P({supplier_id:tro.id,part_number:'PDM-12',name:'Smart power distribution, J1939 (sample)',category:'module',lifecycle:'onboarding',supplier_release_date:rel(-2),onboard_date:rel(3),markets:['Construction','Utility vehicles'],software_platform:'J1939 config tool',connector:'2× 24-pin sealed',length_mm:170,width_mm:125,height_mm:58});
+  const ts2=P({supplier_id:mar.id,part_number:'TS-2',name:'Dual-axis tilt sensor (sample)',category:'sensor',lifecycle:'evaluating',supplier_release_date:rel(2),markets:['Construction','Mining','Submarine'],connector:'M12 5-pin',ip_rating:'IP68'});
+  const ps4=P({supplier_id:mar.id,part_number:'PS-400',name:'Pressure sensor, 400 bar (sample)',category:'sensor',lifecycle:'evaluating',supplier_release_date:rel(5),markets:['Submarine','Mining'],connector:'M12 4-pin',ip_rating:'IP69K'});
+  const products=[c200,c300,c400,t10,t20,io16,pdm8,pdm12,ts2,ps4];
+  const tr1=mk({from_product_id:c200.id,to_product_id:c300.id,kind:'form_fit',effort_weeks:6,software_impact:'minor',software_notes:'Recompile on SP19; two I/O library blocks renamed.',harness_impact:'minor',harness_notes:'Same connectors; 6 pins remapped — harness rev or adapter.',mechanical_impact:'minor',mechanical_notes:'+8 mm length, same bolt pattern.'});
+  const tr2=mk({from_product_id:t10.id,to_product_id:t20.id,kind:'drop_in',effort_weeks:10,software_impact:'major',software_notes:'Cloud API moves REST → MQTT; customer back-end integration must be updated.',harness_impact:'none',mechanical_impact:'none'});
+  const tr3=mk({from_product_id:pdm8.id,to_product_id:pdm12.id,kind:'redesign',effort_weeks:16,software_impact:'minor',software_notes:'Outputs configured over J1939.',harness_impact:'major',harness_notes:'New sealed connector family.',mechanical_impact:'minor',mechanical_notes:'Slightly larger footprint.'});
+  const cA=mk({name:'Sample OEM A',market:'Agriculture'}),cB=mk({name:'Sample OEM B',market:'Construction'}),cC=mk({name:'Sample OEM C',market:'Mining'});
+  const CP=o=>mk({transition_status:'not_started',...o});
+  const cps=[CP({customer_id:cA.id,product_id:c200.id,transition_id:tr1.id,transition_status:'evaluating',target_date:rel(4),annual_volume:1200,application:'Sprayer boom control'}),
+    CP({customer_id:cA.id,product_id:t10.id,transition_id:tr2.id,transition_status:'sampling',target_date:rel(3),annual_volume:900}),
+    CP({customer_id:cB.id,product_id:c200.id,transition_id:tr1.id,transition_status:'notified',target_date:rel(6),annual_volume:450,application:'Compact loader'}),
+    CP({customer_id:cB.id,product_id:pdm8.id,transition_id:tr3.id,annual_volume:450}),
+    CP({customer_id:cC.id,product_id:t10.id,transition_id:tr2.id,transition_status:'at_risk',target_date:rel(2),annual_volume:300,notes:'Back-end team not staffed until next quarter'}),
+    CP({customer_id:cC.id,product_id:io16.id,annual_volume:600})];
+  const events=[mk({event_date:rel(-4),kind:'pcn',title:'NRND notice received for C-200',product_id:c200.id,supplier_id:stw.id}),
+    mk({event_date:rel(-1),kind:'ltb',title:'T-10 last-time-buy orders due',product_id:t10.id,supplier_id:stw.id}),
+    mk({event_date:rel(6),kind:'release',title:'C-400S supplier target release',product_id:c400.id,supplier_id:stw.id}),
+    mk({event_date:rel(1),kind:'milestone',title:'Marlin line card review',supplier_id:mar.id})];
+  return{suppliers:[stw,tro,mar],markets,products,transitions:[tr1,tr2,tr3],customers:[cA,cB,cC],customer_products:cps,events};
+}
+
+/* ---------- forms ---------- */
+const supOpts=()=>S.data.suppliers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(s=>[s.id,s.name]);
+const prodOpts=()=>S.data.products.slice().sort((a,b)=>a.part_number.localeCompare(b.part_number)).map(p=>[p.id,`${p.part_number} — ${p.name}`]);
+const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>[c.id,c.name]);
+const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
+const IMP=[['none','None'],['minor','Minor'],['major','Major']];
+const FORMS={
+ products:{title:'Product',defaults:{lifecycle:'evaluating',category:'controller',markets:[]},fields:()=>[
+  {h:'Product'},{k:'part_number',l:'Part number',req:1},{k:'name',l:'Description',req:1},
+  {k:'supplier_id',l:'Supplier',t:'select',o:supOpts(),req:1},{k:'category',l:'Category',t:'select',o:Object.entries(CATS1),req:1},
+  {k:'lifecycle',l:'Lifecycle status',t:'select',o:LIFECYCLE.map(x=>[x.k,x.l]),req:1},
+  {k:'markets',l:'Markets',t:'multi',o:S.data.markets.map(m=>[m.name,m.name+(m.status==='considering'?' (considering)':'')])},
+  {h:'Lifecycle dates'},{k:'supplier_release_date',l:'Supplier release',t:'date'},{k:'onboard_date',l:'Onboarded by us',t:'date'},
+  {k:'nrnd_date',l:'NRND (not recommended for new designs)',t:'date'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'eol_date',l:'End of life',t:'date'},
+  {h:'Fit · form · function'},{k:'software_platform',l:'Software platform / version'},{k:'connector',l:'Connectors / pinout'},
+  {row:[{k:'length_mm',l:'Length mm',t:'number'},{k:'width_mm',l:'Width mm',t:'number'},{k:'height_mm',l:'Height mm',t:'number'}]},
+  {k:'weight_g',l:'Weight (g)',t:'number'},{k:'mounting',l:'Mounting'},{k:'ip_rating',l:'IP rating'},{k:'datasheet_url',l:'Datasheet link',t:'url'},
+  {h:'Notes'},{k:'notes',l:'Notes',t:'textarea'}]},
+ transitions:{title:'Transition',defaults:{kind:'form_fit',software_impact:'none',harness_impact:'none',mechanical_impact:'none'},fields:()=>[
+  {h:'Products'},{k:'from_product_id',l:'From (outgoing)',t:'select',o:prodOpts(),req:1},{k:'to_product_id',l:'To (successor)',t:'select',o:prodOpts(),req:1},
+  {k:'kind',l:'Type',t:'select',o:Object.entries(KIND),req:1},{k:'effort_weeks',l:'Typical customer effort (weeks)',t:'number'},
+  {h:'Software'},{k:'software_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'software_notes',l:'What changes',t:'textarea'},
+  {h:'Harness & connectors'},{k:'harness_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'harness_notes',l:'What changes',t:'textarea'},
+  {h:'Mechanical & dimensions'},{k:'mechanical_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'mechanical_notes',l:'What changes',t:'textarea'},
+  {h:'Notes'},{k:'notes',l:'Notes',t:'textarea'}]},
+ customers:{title:'Customer',fields:()=>[{k:'name',l:'Customer name',req:1},{k:'market',l:'Market',t:'select',o:S.data.markets.map(m=>[m.name,m.name])},{k:'contact',l:'Contact'},{k:'notes',l:'Notes',t:'textarea'}]},
+ customer_products:{title:'Customer product',defaults:{transition_status:'not_started'},fields:()=>[
+  {k:'customer_id',l:'Customer',t:'select',o:custOpts(),req:1},{k:'product_id',l:'Product they use',t:'select',o:prodOpts(),req:1},
+  {k:'application',l:'Application / machine'},{k:'annual_volume',l:'Annual volume',t:'number'},
+  {h:'Migration'},{k:'transition_id',l:'Moving to',t:'select',o:trOpts()},{k:'transition_status',l:'Status',t:'select',o:MIG,req:1},
+  {k:'target_date',l:'Target date',t:'date'},{k:'notes',l:'Notes',t:'textarea'}]},
+ events:{title:'Event',defaults:{kind:'announcement'},fields:()=>[
+  {k:'event_date',l:'Date',t:'date',req:1},{k:'kind',l:'Type',t:'select',o:EVK,req:1},{k:'title',l:'Title',req:1},
+  {k:'product_id',l:'Product',t:'select',o:prodOpts()},{k:'supplier_id',l:'Supplier',t:'select',o:supOpts()},
+  {k:'details',l:'Details',t:'textarea'},{k:'source_url',l:'Link (PCN, roadmap deck…)',t:'url'}]},
+ suppliers:{title:'Supplier',defaults:{color:'#2563eb'},fields:()=>[{k:'name',l:'Name',req:1},{k:'color',l:'Color on timeline',t:'color'},{k:'country',l:'Country'},{k:'roadmap_cadence',l:'Roadmap cadence'},{k:'contact',l:'Contact'},{k:'notes',l:'Notes',t:'textarea'}]},
+ markets:{title:'Market',defaults:{status:'active'},fields:()=>[{k:'name',l:'Name',req:1},{k:'status',l:'Status',t:'select',o:[['active','Active'],['considering','Considering']],req:1},{k:'notes',l:'Notes',t:'textarea'}]}
+};
+const flat=fs=>fs.flatMap(f=>f.row?f.row:f.h?[]:[f]);
+function fieldHTML(f,v){
+  if(f.h)return`<div class="fh">${esc(f.h)}</div>`;
+  if(f.row)return`<div class="grid3">${f.row.map(x=>fieldHTML(x,v)).join('')}</div>`;
+  const val=v[f.k],req=f.req?'required':'';let inp;
+  if(f.t==='select')inp=`<select name="${f.k}" ${req}>${f.req?'':'<option value="">—</option>'}${f.o.map(([a,b])=>`<option value="${esc(a)}" ${String(val??'')===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
+  else if(f.t==='multi')inp=`<div class="chips wrap">${f.o.map(([a,b])=>{const on=(val||[]).includes(a);return`<label class="chip ${on?'on':''}"><input type="checkbox" name="${f.k}" value="${esc(a)}" ${on?'checked':''} hidden>${esc(b)}</label>`}).join('')||'<span class="mut">Add markets on the More tab</span>'}</div>`;
+  else if(f.t==='textarea')inp=`<textarea name="${f.k}">${esc(val)}</textarea>`;
+  else inp=`<input name="${f.k}" type="${f.t||'text'}" value="${esc(val??'')}" ${req} ${f.t==='number'?'step="any" inputmode="decimal"':''}>`;
+  return`<div class="field"><label class="l">${esc(f.l)}${f.req?' *':''}</label>${inp}</div>`;
+}
+function collect(form,fields){const fd=new FormData(form),o={};flat(fields).forEach(f=>{if(f.t==='multi')o[f.k]=fd.getAll(f.k);else{let v=fd.get(f.k);v=(v===''||v==null)?null:f.t==='number'?Number(v):v;o[f.k]=v}});return o}
+
+/* ---------- views ---------- */
+const ICONS={roadmap:'<path d="M4 6h9M4 12h14M4 18h7"/><circle cx="16" cy="6" r="1.6"/><circle cx="20" cy="12" r="1.6"/><circle cx="14" cy="18" r="1.6"/>',
+ products:'<rect x="5" y="5" width="14" height="14" rx="2.5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
+ transitions:'<path d="M4 8h14l-4-4M20 16H6l4 4"/>',
+ customers:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.4M18 14.8c1.6.7 2.7 2.4 3 5.2"/>',
+ more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'};
+const TITLES={roadmap:'Roadmap',products:'Products',transitions:'Transitions',customers:'Customers',more:'More'};
+const fab=(table,def)=>canEdit()?`<button class="fab" data-act="new" data-arg="${table}" ${def?`data-def="${esc(JSON.stringify(def))}"`:''} aria-label="Add">+</button>`:'';
+
+function renderAll(){
+  $('#app').innerHTML=`<header class="top"><h1>${TITLES[S.tab]}</h1>${S.mode==='demo'?'<span class="tag">Demo</span>':''}
+    ${S.mode==='live'?'<button class="btn ghost" data-act="refresh" aria-label="Refresh">↻ Sync</button>':''}</header>
+    <main id="main"></main>
+    <nav class="tabs">${Object.keys(TITLES).map(k=>`<button class="${S.tab===k?'on':''}" data-act="tab" data-arg="${k}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${TITLES[k]}</button>`).join('')}</nav>`;
+  renderMain();renderSheet();
+}
+function renderMain(){
+  const old=$('.tl');if(old)S.tlScroll=[old.scrollLeft,old.scrollTop];
+  const m=$('#main');if(!m)return;
+  m.innerHTML=({roadmap:viewRoadmap,products:viewProducts,transitions:viewTransitions,customers:viewCustomers,more:viewMore})[S.tab]();
+  const tl=$('.tl');if(tl){if(S.tlScroll){tl.scrollLeft=S.tlScroll[0];tl.scrollTop=S.tlScroll[1]}else tl.scrollLeft=Math.max(0,+tl.dataset.today-90)}
+}
+
+/* Roadmap tab */
+function stat(n,l,c,arg){return`<div class="stat" style="--c:${c}" data-act="statgo" data-arg="${arg}"><b>${n}</b><span>${l}</span></div>`}
+function viewRoadmap(){
+  const ps=S.data.products,cnt=ks=>ps.filter(p=>ks.includes(phase(p))).length;
+  const mig=S.data.customer_products.filter(needsMig).length;
+  const rows=ps.filter(p=>{const ph=phase(p);return ph!=='rejected'&&!S.f.hide.has(p.supplier_id)&&(S.f.showEol||ph!=='eol')});
+  const up=upcoming(12).slice(0,8);
+  return`${S.mode==='demo'?`<div class="banner">You're viewing sample data on this device. Connect Supabase on the <b data-act="tab" data-arg="more" style="text-decoration:underline">More</b> tab to share with your team.</div>`:''}
+  <div class="stats">${stat(cnt(['active']),'Active products','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
+  ${stat(cnt(['nrnd','ltb']),'Phasing out (NRND / LTB)','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
+  <div class="sec"><h2>Lifecycle timeline</h2><span class="mut">${rows.length} products</span></div>
+  <div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
+  <div class="chips" style="margin-bottom:10px">${S.data.suppliers.map(s=>`<button class="chip ${S.f.hide.has(s.id)?'':'on'}" data-act="sup" data-id="${s.id}"><i class="dot" style="background:${esc(s.color)}"></i>${esc(s.name)}</button>`).join('')}
+   <button class="chip ${S.f.showEol?'on':''}" data-act="eol">Include EOL</button></div>
+  ${rows.length?timeline(rows):'<div class="card empty">No products match these filters.</div>'}
+  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span style="color:var(--acc);font-weight:600">→ successor</span></div>
+  <div class="sec"><h2>Next 12 months</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="events">+ Event</button>`:''}</div>
+  ${up.length?`<div class="card">${up.map(upItem).join('')}</div>`:'<div class="card empty">Nothing scheduled in the next 12 months.</div>'}`;
+}
+function upcoming(months){
+  const lim=new Date(today);lim.setMonth(lim.getMonth()+months);const out=[];
+  S.data.products.forEach(p=>{if(phase(p)==='rejected')return;[['nrnd_date','NRND','nrnd'],['ltb_date','Last-time buy','ltb'],['eol_date','End of life','eol'],['supplier_release_date','Supplier release','evaluating'],['onboard_date','Onboard','active']].forEach(([k,l,c])=>{const x=d(p[k]);if(x&&x>=today&&x<=lim)out.push({date:p[k],l,c,p})})});
+  S.data.events.forEach(e=>{const x=d(e.event_date);if(x&&x>=today&&x<=lim)out.push({date:e.event_date,l:e.title,e})});
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function upItem(u){
+  if(u.e)return`<div class="ev" data-act="edit" data-arg="events" data-id="${u.e.id}"><div class="dt">${fmtMY(u.date)}</div><div class="grow"><b>${esc(u.l)}</b><div class="mut">${esc((EVK.find(k=>k[0]===u.e.kind)||[])[1]||'')} · ${relTxt(u.date)}</div></div></div>`;
+  return`<div class="ev" data-act="product" data-id="${u.p.id}"><div class="dt">${fmtMY(u.date)}</div><div class="grow"><b>${esc(u.p.part_number)}</b> <span class="pill" style="--c:${LC[u.c].c}">${u.l}</span><div class="mut ell">${esc(u.p.name)} · ${relTxt(u.date)}</div></div></div>`;
+}
+function groupKeys(p){
+  if(S.f.group==='supplier')return[sup(p)?.name||'No supplier'];
+  if(S.f.group==='market')return(p.markets&&p.markets.length)?p.markets:['Unassigned'];
+  return[(CATEGORIES.find(c=>c[0]===p.category)||[,'Other'])[1]];
+}
+function timeline(products){
+  const start=new Date(today.getFullYear()-2,0,1),endY=today.getFullYear()+3,months=(endY-start.getFullYear()+1)*12,W=months*MW;
+  const X=dt=>{const m=(dt.getFullYear()-start.getFullYear())*12+dt.getMonth()+(dt.getDate()-1)/new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();return Math.max(0,Math.min(W,m*MW))};
+  let head='';for(let m=0;m<months;m+=3){const dt=new Date(start.getFullYear(),m,1);if(dt.getMonth()===0)head+=`<div class="tl-y" style="left:${m*MW+4}px">${dt.getFullYear()}</div>`;head+=`<div class="tl-q" style="left:${m*MW+4}px">Q${dt.getMonth()/3+1}</div>`}
+  const tx=X(today);head+=`<div class="tl-now" style="left:${tx}px">Today</div>`;
+  const groups=new Map();products.forEach(p=>groupKeys(p).forEach(k=>{if(!groups.has(k))groups.set(k,[]);groups.get(k).push(p)}));
+  let keys=[...groups.keys()];
+  if(S.f.group==='category'){const o=CATEGORIES.map(c=>c[1]);keys.sort((a,b)=>o.indexOf(a)-o.indexOf(b))}
+  else if(S.f.group==='market'){const o=S.data.markets.map(m=>m.name);keys.sort((a,b)=>(o.indexOf(a)<0?99:o.indexOf(a))-(o.indexOf(b)<0?99:o.indexOf(b)))}
+  else keys.sort();
+  const firstDate=p=>p.supplier_release_date||p.onboard_date||'9999';
+  const grid=`background-image:repeating-linear-gradient(to right,color-mix(in srgb,var(--mut) 30%,transparent) 0 1px,transparent 1px ${MW*12}px),repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px ${MW*3}px)`;
+  let body='';
+  keys.forEach(k=>{const L=groups.get(k).sort((a,b)=>firstDate(a).localeCompare(firstDate(b)));
+    body+=`<div class="tl-grp"><div class="tl-glab">${esc(k)} · ${L.length}</div></div>`;
+    L.forEach(p=>body+=tlRow(p,X,W,grid))});
+  return`<div class="tl" data-today="${tx}"><div class="tl-in" style="width:${LW+W}px"><div class="tl-head"><div class="tl-corner">Tap a row</div><div class="tl-years" style="width:${W}px">${head}</div></div>${body}<div class="tl-today" style="left:${LW+tx}px"></div></div></div>`;
+}
+function tlRow(p,X,W,grid){
+  const ph=phase(p),pts=[],rd=d(p.supplier_release_date),od=d(p.onboard_date),nd=d(p.nrnd_date),ld=d(p.ltb_date),ed=d(p.eol_date);
+  if(rd)pts.push([rd,od?'evaluating':(RANK[p.lifecycle]>=2?'active':p.lifecycle)]);
+  if(od)pts.push([od,'active']);if(nd)pts.push([nd,'nrnd']);if(ld)pts.push([ld,'ltb']);if(ed)pts.push([ed,'end']);
+  pts.sort((a,b)=>a[0]-b[0]);
+  let bars='';
+  if(!pts.length)bars=`<div class="bar" style="left:0;width:${W}px;background:${LC[ph]?.c||'#999'};opacity:.22"></div>`;
+  for(let i=0;i<pts.length;i++){const[dt,k]=pts[i];if(k==='end')break;const x0=X(dt),x1=pts[i+1]?X(pts[i+1][0]):W;if(x1-x0<1)continue;const c=LC[k]?.c||'#999',plan=k==='evaluating'||k==='onboarding';
+    bars+=`<div class="bar" style="left:${x0}px;width:${x1-x0}px;${plan?`background:repeating-linear-gradient(135deg,${c}66 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1.5px ${c}`:`background:${c}`}"></div>`}
+  if(ld)bars+=`<div class="mk" style="left:${X(ld)}px;background:#ea580c" title="LTB ${fmt(p.ltb_date)}"></div>`;
+  if(ed)bars+=`<div class="mk" style="left:${X(ed)}px;background:#dc2626" title="EOL ${fmt(p.eol_date)}"></div>`;
+  const tr=S.data.transitions.filter(t=>t.from_product_id===p.id);
+  if(tr.length){const anchor=ed||ld||nd;if(anchor){const x=Math.min(X(anchor)+12,W-90);bars+=tr.slice(0,1).map(t=>`<div class="tl-next" style="left:${x}px" data-act="transition" data-id="${t.id}">→ ${esc(pnOf(t.to_product_id))}${tr.length>1?' +'+(tr.length-1):''}</div>`).join('')}}
+  return`<div class="tl-row" data-act="product" data-id="${p.id}"><div class="tl-lab"><b><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:7px;height:7px;margin-right:5px;vertical-align:1px"></i>${esc(p.part_number)}</b><span>${esc(p.name)}</span></div><div class="tl-track" style="width:${W}px;${grid}">${bars}</div></div>`;
+}
+
+/* Products tab */
+const PHASEF={all:null,pipeline:['evaluating','onboarding'],active:['active'],phasing:['nrnd','ltb'],eol:['eol','rejected']};
+function viewProducts(){
+  return`<input id="q" type="search" placeholder="Search part number, name, connector…" value="${esc(S.pf.q)}" autocomplete="off">
+  <div class="chips" style="margin:10px 0 6px">${[['all','All'],['pipeline','Evaluating'],['active','Active'],['phasing','Phasing out'],['eol','EOL / not onboarded']].map(([k,l])=>`<button class="chip ${S.pf.phase===k?'on':''}" data-act="phase" data-arg="${k}">${l}</button>`).join('')}</div>
+  <div class="chips" style="margin-bottom:12px">${[['all','All types'],...CATEGORIES].map(([k,l])=>`<button class="chip ${S.pf.cat===k?'on':''}" data-act="cat" data-arg="${k}">${l}</button>`).join('')}</div>
+  <div id="plist">${productList()}</div>${fab('products')}`;
+}
+function productList(){
+  const q=S.pf.q.trim().toLowerCase(),pf=PHASEF[S.pf.phase];
+  const L=S.data.products.filter(p=>(!pf||pf.includes(phase(p)))&&(S.pf.cat==='all'||p.category===S.pf.cat)&&(!q||[p.part_number,p.name,p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q))).sort((a,b)=>a.part_number.localeCompare(b.part_number));
+  return L.length?L.map(productItem).join(''):'<div class="empty">No products found.</div>';
+}
+function productItem(p){
+  const s=sup(p),nm=nextMilestone(p);
+  return`<div class="li" data-act="product" data-id="${p.id}"><i class="dot" style="background:${esc(s?.color||'#999')}"></i><div class="grow"><div class="pn">${esc(p.part_number)} <span class="mut" style="font-weight:400">· ${esc(CATS1[p.category]||'')}</span></div><div class="mut ell">${esc(p.name)}</div>${nm?`<div class="mut" style="font-size:12px">${nm.l} ${relTxt(nm.date)}</div>`:''}</div>${badge(phase(p))}</div>`;
+}
+
+/* Transitions tab */
+function cpsFor(t){return S.data.customer_products.filter(c=>c.transition_id===t.id||(c.product_id===t.from_product_id&&!c.transition_id))}
+function trCard(t){
+  const a=byId('products',t.from_product_id),b=byId('products',t.to_product_id);if(!a||!b)return'';
+  const cps=cpsFor(t),done=cps.filter(c=>['released','complete'].includes(c.transition_status)).length,risk=cps.filter(c=>c.transition_status==='at_risk').length;
+  return`<div class="card" data-act="transition" data-id="${t.id}">
+   <div class="ac"><div class="mini"><b>${esc(a.part_number)}</b><div style="margin-top:3px">${badge(phase(a))}</div></div><div class="arr">→</div><div class="mini"><b>${esc(b.part_number)}</b><div style="margin-top:3px">${badge(phase(b))}</div></div></div>
+   <div class="chips wrap" style="margin-top:10px"><span class="tag">${KIND[t.kind]||''}</span>${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
+   <div class="row" style="margin-top:10px"><span class="mut">${cps.length?`${done}/${cps.length} customers moved`:'No customers linked'}</span>${cps.length?`<div class="prog"><i style="width:${Math.round(done/cps.length*100)}%"></i></div>`:''}${risk?`<span class="pill" style="--c:#dc2626">${risk} at risk</span>`:''}</div></div>`;
+}
+function viewTransitions(){
+  const L=S.data.transitions.slice().sort((a,b)=>{const pa=byId('products',a.from_product_id),pb=byId('products',b.from_product_id);return(pa?.eol_date||pa?.ltb_date||'9999').localeCompare(pb?.eol_date||pb?.ltb_date||'9999')});
+  const orphan=S.data.products.filter(p=>['nrnd','ltb','eol'].includes(phase(p))&&!S.data.transitions.some(t=>t.from_product_id===p.id));
+  return`${orphan.length?`<div class="banner"><b>No successor defined:</b> ${orphan.map(p=>`<span data-act="product" data-id="${p.id}" style="text-decoration:underline">${esc(p.part_number)}</span>`).join(', ')}</div>`:''}
+  ${L.length?L.map(trCard).join(''):'<div class="card empty">No transitions yet. Add one to map an outgoing product to its successor.</div>'}${fab('transitions')}`;
+}
+
+/* Customers tab */
+function viewCustomers(){
+  const L=S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return(L.length?L.map(c=>{const cps=S.data.customer_products.filter(x=>x.customer_id===c.id),m=cps.filter(needsMig).length,r=cps.filter(x=>x.transition_status==='at_risk').length;
+    return`<div class="li" data-act="customer" data-id="${c.id}"><div class="grow"><div class="pn">${esc(c.name)}</div><div class="mut">${esc(c.market||'—')} · ${cps.length} product${cps.length===1?'':'s'}</div></div>${r?`<span class="pill" style="--c:#dc2626">${r} at risk</span>`:m?`<span class="pill" style="--c:#d97706">${m} migrating</span>`:`<span class="pill" style="--c:#16a34a">Current</span>`}</div>`}).join(''):'<div class="card empty">No customers yet.</div>')+fab('customers');
+}
+
+/* More tab */
+function viewMore(){
+  const c=cfg(),ev=S.data.events.slice().sort((a,b)=>b.event_date.localeCompare(a.event_date)).slice(0,12);
+  return`<div class="sec"><h2>Suppliers</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="suppliers">+ Add</button>':''}</div>
+  ${S.data.suppliers.map(s=>{const n=S.data.products.filter(p=>p.supplier_id===s.id).length;return`<div class="li" data-act="edit" data-arg="suppliers" data-id="${s.id}"><i class="dot" style="background:${esc(s.color)}"></i><div class="grow"><div class="pn">${esc(s.name)}</div><div class="mut">${n} product${n===1?'':'s'}${s.roadmap_cadence?' · '+esc(s.roadmap_cadence):''}</div></div></div>`}).join('')}
+  <div class="sec"><h2>Markets</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="markets">+ Add</button>':''}</div>
+  <div class="card"><div class="chips wrap">${S.data.markets.map(m=>`<button class="chip" data-act="edit" data-arg="markets" data-id="${m.id}">${esc(m.name)}${m.status==='considering'?' <span class="mut">· considering</span>':''}</button>`).join('')}</div></div>
+  <div class="sec"><h2>Supplier notices & events</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="events">+ Add</button>':''}</div>
+  ${ev.length?`<div class="card">${ev.map(e=>`<div class="ev" data-act="edit" data-arg="events" data-id="${e.id}"><div class="dt">${fmtMY(e.event_date)}</div><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc((EVK.find(k=>k[0]===e.kind)||[])[1]||'')}${e.product_id?' · '+esc(pnOf(e.product_id)):''}</div></div></div>`).join('')}</div>`:'<div class="card empty">No events yet.</div>'}
+  <div class="sec"><h2>Data & connection</h2></div>
+  <div class="card">${S.mode==='live'?`<div class="mut">Connected to</div><b class="ell" style="display:block">${esc(c.url.replace(/^https?:\/\//,''))}</b><div class="mut" style="margin-top:8px">Signed in as <b>${esc(S.user?.email)}</b> · ${esc(S.role)}</div>
+    <div class="btns"><button class="btn sm" data-act="export">Export JSON</button><button class="btn sm" data-act="signout">Sign out</button>${c.hard?'':'<button class="btn sm danger" data-act="disconnect">Disconnect device</button>'}</div>`
+   :`<p class="mut" style="margin-top:0">Demo mode — data lives only on this device. Enter your Supabase project details to share with your team.</p>
+    <form id="conn"><div class="field"><label class="l">Project URL</label><input name="url" placeholder="https://xxxx.supabase.co" required></div><div class="field"><label class="l">Anon public key</label><input name="key" required></div><button class="btn pri block">Connect</button></form>
+    <div class="btns"><button class="btn sm" data-act="export">Export JSON</button><button class="btn sm danger" data-act="resetdemo">Reset sample data</button></div>`}</div>`;
+}
+
+/* ---------- sheets ---------- */
+function push(e){S.stack.push(e);renderSheet()}
+function renderSheet(){
+  const el=$('#sheet');
+  if(!S.stack.length){el.innerHTML='';document.body.classList.remove('noscroll');S.sheetOpen=false;return}
+  const top=S.stack[S.stack.length-1],r=SHEETS[top.type](top);
+  if(!r){S.stack.pop();return renderSheet()}
+  const anim=S.sheetOpen?'':'anim';S.sheetOpen=true;
+  el.innerHTML=`<div class="sheet-bg ${anim}" data-act="closeall"></div><div class="sheet ${anim}"><div class="sheet-h"><div><button class="btn ghost" data-act="back">${S.stack.length>1?'‹ Back':'Close'}</button></div><h3>${esc(r.title)}</h3><div style="text-align:right">${r.right||''}</div></div><div class="sheet-b">${r.body}</div></div>`;
+  document.body.classList.add('noscroll');
+}
+const kvItem=(l,v,sub)=>`<div><span>${l}</span><b>${v||'—'}</b>${sub?`<small>${sub}</small>`:''}</div>`;
+const SHEETS={
+ product(e){
+  const p=byId('products',e.id);if(!p)return null;
+  const s=sup(p),ph=phase(p),steps=['evaluating','onboarding','active','nrnd','ltb','eol'],ri=steps.indexOf(ph);
+  const out=S.data.transitions.filter(t=>t.from_product_id===p.id),inn=S.data.transitions.filter(t=>t.to_product_id===p.id);
+  const cps=S.data.customer_products.filter(c=>c.product_id===p.id),evs=S.data.events.filter(x=>x.product_id===p.id).sort((a,b)=>b.event_date.localeCompare(a.event_date));
+  const dims=[p.length_mm,p.width_mm,p.height_mm].some(v=>v!=null)?`${p.length_mm??'?'} × ${p.width_mm??'?'} × ${p.height_mm??'?'} mm`:'';
+  return{title:p.part_number,right:canEdit()?`<button class="btn ghost" data-act="edit" data-arg="products" data-id="${p.id}">Edit</button>`:'',body:`
+   <div class="hero"><h2>${esc(p.part_number)}</h2><div class="mut">${esc(p.name)}</div>
+   <div class="row" style="margin-top:8px;flex-wrap:wrap">${badge(ph)}<span class="tag"><i class="dot" style="background:${esc(s?.color||'#999')};width:7px;height:7px"></i> ${esc(s?.name||'')}</span><span class="tag">${esc(CATS1[p.category]||'')}</span></div></div>
+   ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
+   <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
+    ${[['supplier_release_date','Supplier release'],['onboard_date','Onboarded'],['nrnd_date','NRND'],['ltb_date','Last-time buy'],['eol_date','End of life']].map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
+   <div class="sec"><h2>Fit · form · function</h2></div><div class="card kv">
+    ${kvItem('Software',esc(p.software_platform))}${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}</div>
+   ${p.markets?.length?`<div class="chips wrap" style="margin-top:4px">${p.markets.map(m=>`<span class="chip">${esc(m)}</span>`).join('')}</div>`:''}
+   ${p.datasheet_url?`<p><a href="${esc(p.datasheet_url)}" target="_blank" rel="noopener">Open datasheet ↗</a></p>`:''}
+   ${p.notes?`<div class="card" style="margin-top:10px;white-space:pre-wrap">${esc(p.notes)}</div>`:''}
+   <div class="sec"><h2>Successor</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="transitions" data-def="${esc(JSON.stringify({from_product_id:p.id}))}">+ Add</button>`:''}</div>
+   ${out.length?out.map(trCard).join(''):`<div class="card empty" style="padding:16px">${['nrnd','ltb','eol'].includes(ph)?'⚠️ Phasing out with no successor mapped.':'None defined.'}</div>`}
+   ${inn.length?`<div class="sec"><h2>Replaces</h2></div>${inn.map(trCard).join('')}`:''}
+   <div class="sec"><h2>Customers using it</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="customer_products" data-def="${esc(JSON.stringify({product_id:p.id,transition_id:out[0]?.id||null}))}">+ Add</button>`:''}</div>
+   ${cps.length?cps.map(c=>`<div class="li" data-act="customer" data-id="${c.customer_id}"><div class="grow"><div class="pn">${esc(byId('customers',c.customer_id)?.name)}</div><div class="mut">${c.annual_volume?c.annual_volume.toLocaleString()+'/yr · ':''}${c.transition_id?'→ '+esc(pnOf(byId('transitions',c.transition_id)?.to_product_id)):'No migration set'}</div></div>${migBadge(c.transition_status)}</div>`).join(''):'<div class="card empty" style="padding:16px">No customers linked.</div>'}
+   <div class="sec"><h2>History & notices</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="events" data-def="${esc(JSON.stringify({product_id:p.id,supplier_id:p.supplier_id}))}">+ Add</button>`:''}</div>
+   ${evs.length?`<div class="card">${evs.map(x=>`<div class="ev" data-act="edit" data-arg="events" data-id="${x.id}"><div class="dt">${fmtMY(x.event_date)}</div><div class="grow"><b>${esc(x.title)}</b>${x.details?`<div class="mut">${esc(x.details)}</div>`:''}</div></div>`).join('')}</div>`:'<div class="card empty" style="padding:16px">No events logged.</div>'}`};
+ },
+ transition(e){
+  const t=byId('transitions',e.id);if(!t)return null;
+  const a=byId('products',t.from_product_id),b=byId('products',t.to_product_id);if(!a||!b)return null;
+  const CMP=[['software_platform','Software'],['connector','Connectors'],['length_mm','Length mm'],['width_mm','Width mm'],['height_mm','Height mm'],['weight_g','Weight g'],['mounting','Mounting'],['ip_rating','IP rating']];
+  const rows=CMP.map(([k,l])=>{const x=a[k],y=b[k],chg=String(x??'')!==String(y??'');let dl='';if(typeof x==='number'&&typeof y==='number'&&x!==y)dl=` <b style="color:var(--warn)">(${y-x>0?'+':''}${+(y-x).toFixed(2)})</b>`;return`<tr class="${chg?'chg':''}"><td>${l}</td><td>${esc(x??'—')}</td><td>${esc(y??'—')}${dl}</td></tr>`}).join('');
+  const cps=cpsFor(t),done=cps.filter(c=>['released','complete'].includes(c.transition_status)).length;
+  const imp=(lab,k,n)=>`<div class="impact"><div class="t">${lab}</div><div style="flex:1"><span class="pill" style="--c:${IMPACT[t[k]]?.c}">${IMPACT[t[k]]?.l}</span>${t[n]?`<div style="margin-top:5px;white-space:pre-wrap">${esc(t[n])}</div>`:''}</div></div>`;
+  return{title:`${a.part_number} → ${b.part_number}`,right:canEdit()?`<button class="btn ghost" data-act="edit" data-arg="transitions" data-id="${t.id}">Edit</button>`:'',body:`
+   <div class="ac"><div class="mini" data-act="product" data-id="${a.id}"><span class="mut" style="font-size:11px">FROM</span><div class="pn">${esc(a.part_number)}</div><div class="mut ell" style="font-size:12px">${esc(a.name)}</div><div style="margin-top:4px">${badge(phase(a))}</div>${a.eol_date?`<div class="mut" style="font-size:11.5px;margin-top:4px">EOL ${fmtMY(a.eol_date)}</div>`:''}</div><div class="arr">→</div>
+   <div class="mini" data-act="product" data-id="${b.id}"><span class="mut" style="font-size:11px">TO</span><div class="pn">${esc(b.part_number)}</div><div class="mut ell" style="font-size:12px">${esc(b.name)}</div><div style="margin-top:4px">${badge(phase(b))}</div></div></div>
+   <div class="row" style="margin-top:12px;flex-wrap:wrap"><span class="tag">${KIND[t.kind]}</span>${t.effort_weeks?`<span class="tag">~${esc(t.effort_weeks)} wks customer effort</span>`:''}</div>
+   <div class="sec"><h2>Customer impact</h2></div>
+   <div class="card">${imp('Software','software_impact','software_notes')}${imp('Harness & connectors','harness_impact','harness_notes')}${imp('Mechanical','mechanical_impact','mechanical_notes')}</div>
+   ${t.notes?`<div class="card" style="white-space:pre-wrap">${esc(t.notes)}</div>`:''}
+   <div class="sec"><h2>Spec comparison</h2><span class="mut">changes highlighted</span></div>
+   <div class="card" style="padding:6px 8px"><table class="cmp"><tr><th></th><th>${esc(a.part_number)}</th><th>${esc(b.part_number)}</th></tr>${rows}</table></div>
+   <div class="sec"><h2>Customer migrations</h2><span class="mut">${done}/${cps.length} moved</span></div>
+   ${cps.length?cps.map(c=>`<div class="card"><div class="row"><b class="grow" data-act="customer" data-id="${c.customer_id}" style="flex:1">${esc(byId('customers',c.customer_id)?.name)}</b>${c.target_date?`<span class="mut">target ${fmtMY(c.target_date)}</span>`:''}</div>
+     ${c.notes?`<div class="mut" style="margin-top:4px">${esc(c.notes)}</div>`:''}
+     <div class="mig"><select data-change="mig" data-id="${c.id}" ${canEdit()?'':'disabled'} style="border-left:4px solid ${MIGC[c.transition_status]}">${MIG.map(([k,l])=>`<option value="${k}" ${c.transition_status===k?'selected':''}>${l}</option>`).join('')}</select>${canEdit()?`<button class="btn sm" data-act="edit" data-arg="customer_products" data-id="${c.id}">Edit</button>`:''}</div></div>`).join('')
+   :'<div class="card empty" style="padding:16px">No customers use the outgoing product yet.</div>'}`};
+ },
+ customer(e){
+  const c=byId('customers',e.id);if(!c)return null;
+  const cps=S.data.customer_products.filter(x=>x.customer_id===c.id);
+  return{title:c.name,right:canEdit()?`<button class="btn ghost" data-act="edit" data-arg="customers" data-id="${c.id}">Edit</button>`:'',body:`
+   <div class="hero"><h2>${esc(c.name)}</h2><div class="mut">${esc(c.market||'No market set')}${c.contact?' · '+esc(c.contact):''}</div></div>
+   ${c.notes?`<div class="card" style="margin-top:12px;white-space:pre-wrap">${esc(c.notes)}</div>`:''}
+   <div class="sec"><h2>Products & migrations</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="customer_products" data-def="${esc(JSON.stringify({customer_id:c.id}))}">+ Add</button>`:''}</div>
+   ${cps.length?cps.map(x=>{const p=byId('products',x.product_id),t=byId('transitions',x.transition_id),to=t&&byId('products',t.to_product_id);if(!p)return'';
+    return`<div class="card"><div class="row"><div class="grow" data-act="product" data-id="${p.id}" style="flex:1;min-width:0"><div class="pn">${esc(p.part_number)}</div><div class="mut ell">${esc(x.application||p.name)}${x.annual_volume?' · '+x.annual_volume.toLocaleString()+'/yr':''}</div></div>${badge(phase(p))}</div>
+    ${to?`<div class="ac" style="margin-top:10px" data-act="transition" data-id="${t.id}"><div class="mini"><b>${esc(p.part_number)}</b></div><div class="arr">→</div><div class="mini"><b>${esc(to.part_number)}</b> <span class="mut" style="font-size:11px">${KIND[t.kind]}</span></div></div>
+     <div class="chips wrap" style="margin-top:8px">${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
+     <div class="mig"><select data-change="mig" data-id="${x.id}" ${canEdit()?'':'disabled'} style="border-left:4px solid ${MIGC[x.transition_status]}">${MIG.map(([k,l])=>`<option value="${k}" ${x.transition_status===k?'selected':''}>${l}</option>`).join('')}</select>${x.target_date?`<span class="mut">${fmtMY(x.target_date)}</span>`:''}</div>`
+    :['nrnd','ltb','eol'].includes(phase(p))?`<div class="banner" style="margin:10px 0 0">Phasing out — no migration path set.</div>`:''}
+    ${canEdit()?`<div style="text-align:right"><button class="btn ghost sm" data-act="edit" data-arg="customer_products" data-id="${x.id}">Edit</button></div>`:''}</div>`}).join('')
+   :'<div class="card empty" style="padding:16px">No products linked yet.</div>'}`};
+ },
+ form(e){
+  const F=FORMS[e.table];let row;
+  if(e.id){row=byId(e.table,e.id);if(!row)return null;row={...row}}else row={...(F.defaults||{}),...(e.defaults||{})};
+  const fields=F.fields();
+  return{title:(e.id?'Edit ':'New ')+F.title.toLowerCase(),right:canEdit()?`<button class="btn ghost" type="submit" form="frm"><b>Save</b></button>`:'',body:`
+   <form id="frm">${fields.map(f=>fieldHTML(f,row)).join('')}
+   ${canEdit()?`<button class="btn pri block" type="submit">Save</button>${e.id?`<button type="button" class="btn danger block" data-act="del" data-arg="${e.table}" data-id="${e.id}">Delete</button>`:''}`:''}</form>`};
+ }
+};
+
+/* ---------- actions ---------- */
+async function reload(){try{await loadAll();renderMain();renderSheet()}catch(e){toast(errMsg(e))}}
+const A={
+ tab:(id,arg)=>{S.tab=arg;S.stack=[];S.tlScroll=null;renderAll();window.scrollTo(0,0)},
+ product:id=>push({type:'product',id}),transition:id=>push({type:'transition',id}),customer:id=>push({type:'customer',id}),
+ edit:(id,arg)=>push({type:'form',table:arg,id}),
+ new:(id,arg,el)=>push({type:'form',table:arg,defaults:el.dataset.def?JSON.parse(el.dataset.def):{}}),
+ back:()=>{S.stack.pop();renderSheet()},closeall:()=>{S.stack=[];renderSheet()},
+ async del(id,arg){if(!confirm('Delete this record? This cannot be undone.'))return;try{await remove(arg,id);S.stack.pop();toast('Deleted');renderMain();renderSheet()}catch(e){toast(errMsg(e))}},
+ group:(id,arg)=>{S.f.group=arg;renderMain()},
+ sup:id=>{S.f.hide.has(id)?S.f.hide.delete(id):S.f.hide.add(id);renderMain()},
+ eol:()=>{S.f.showEol=!S.f.showEol;renderMain()},
+ phase:(id,arg)=>{S.pf.phase=arg;renderMain()},cat:(id,arg)=>{S.pf.cat=arg;renderMain()},
+ statgo:(id,arg)=>{if(arg==='mig')S.tab='transitions';else{S.pf.phase=arg;S.pf.cat='all';S.tab='products'}renderAll();window.scrollTo(0,0)},
+ refresh:async()=>{await reload();toast('Up to date')},
+ export(){const b=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`roadmap-export-${iso(today)}.json`;document.body.appendChild(a);a.click();a.remove()},
+ resetdemo(){if(confirm('Reset the sample data on this device?')){localStorage.removeItem(Demo.key);location.reload()}},
+ async signout(){await S.sb.auth.signOut();location.reload()},
+ disconnect(){if(confirm('Disconnect this device from Supabase?')){localStorage.removeItem('rm_cfg');S.sb?.auth.signOut();location.reload()}}
+};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t)return;e.stopPropagation();A[t.dataset.act]?.(t.dataset.id,t.dataset.arg,t,e)});
+document.addEventListener('change',async e=>{
+  const t=e.target;
+  if(t.type==='checkbox'&&t.closest('label.chip'))t.closest('label.chip').classList.toggle('on',t.checked);
+  if(t.dataset.change==='mig'){try{await save('customer_products',{id:t.dataset.id,transition_status:t.value});t.style.borderLeftColor=MIGC[t.value];toast('Status updated');renderMain()}catch(err){toast(errMsg(err))}}
+});
+document.addEventListener('input',e=>{if(e.target.id==='q'){S.pf.q=e.target.value;$('#plist').innerHTML=productList()}});
+document.addEventListener('submit',async e=>{
+  const f=e.target;e.preventDefault();
+  if(f.id==='conn'){const fd=new FormData(f);localStorage.setItem('rm_cfg',JSON.stringify({url:fd.get('url').trim().replace(/\/$/,''),key:fd.get('key').trim()}));location.reload();return}
+  if(f.id==='login'){const fd=new FormData(f),btn=f.querySelector('button');btn.disabled=true;btn.textContent='Signing in…';
+    const{data,error}=await S.sb.auth.signInWithPassword({email:fd.get('email').trim(),password:fd.get('password')});
+    if(error){btn.disabled=false;btn.textContent='Sign in';$('#lerr').textContent=error.message;return}
+    S.user=data.user;return afterLogin()}
+  if(f.id==='frm'){
+    const top=S.stack[S.stack.length-1],F=FORMS[top.table],o=collect(f,F.fields());
+    if(top.table==='transitions'&&o.from_product_id===o.to_product_id)return toast('From and To must be different products.');
+    if(top.id)o.id=top.id;
+    try{await save(top.table,o);toast('Saved');S.stack.pop();renderMain();renderSheet()}catch(err){toast(errMsg(err))}
+  }
+});
+
+/* ---------- boot ---------- */
+function renderLogin(){
+  $('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 4px">Product Roadmap</h2><p class="mut" style="margin-top:0">Sign in with your team account.</p>
+  <form id="login"><div class="field"><label class="l">Email</label><input name="email" type="email" autocomplete="username" required></div><div class="field"><label class="l">Password</label><input name="password" type="password" autocomplete="current-password" required></div>
+  <div id="lerr" style="color:var(--bad);font-size:13px"></div><button class="btn pri block">Sign in</button></form>
+  ${cfg().hard?'':'<button class="btn ghost" style="margin-top:8px" data-act="disconnect">Use a different project</button>'}</div></div>`;
+}
+function renderMsg(title,msg){$('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 6px">${esc(title)}</h2><p class="mut">${esc(msg)}</p><div class="btns"><button class="btn" onclick="location.reload()">Retry</button>${S.sb?'<button class="btn" data-act="signout">Sign out</button>':''}${cfg().hard?'':'<button class="btn danger" data-act="disconnect">Disconnect</button>'}</div></div></div>`}
+async function afterLogin(){
+  try{
+    const{data:m,error}=await S.sb.from('members').select('role').maybeSingle();
+    if(error)throw error;
+    if(!m)return renderMsg('No access yet',`${S.user.email} isn't on the roadmap team list. Ask an admin to add you to roadmap.members.`);
+    S.role=m.role;await loadAll();renderAll();
+  }catch(e){renderMsg('Could not load data',errMsg(e))}
+}
+async function init(){
+  const c=cfg();
+  if(c.url&&c.key&&window.supabase){
+    S.mode='live';S.sb=supabase.createClient(c.url,c.key,{db:{schema:CONFIG.SCHEMA}});
+    const{data:{session}}=await S.sb.auth.getSession();
+    if(!session)return renderLogin();
+    S.user=session.user;return afterLogin();
+  }
+  S.mode='demo';S.role='admin';await loadAll();renderAll();
+}
+init();
+</script>
+</body>
+</html>
