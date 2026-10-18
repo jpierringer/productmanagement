@@ -140,7 +140,7 @@ a{color:var(--acc)}
    Leave blank to run in Demo mode (sample data stored on this device),
    or enter them on the "More" tab to connect without editing this file.
    ===================================================================== */
-const CONFIG = { SUPABASE_URL: 'https://sjwarllnehssyphoormc.supabase.co', SUPABASE_ANON_KEY: 'sb_publishable_eGv0iwOKZ1DP6JixaXZnrQ_vI6nax4S', SCHEMA: 'roadmap' };
+const CONFIG = { SUPABASE_URL: '', SUPABASE_ANON_KEY: '', SCHEMA: 'roadmap' };
 
 /* ---------- constants ---------- */
 const LIFECYCLE=[
@@ -255,18 +255,18 @@ function seed(){
   const stw=mk({name:'STW GmbH',color:'#2563eb',country:'Germany',roadmap_cadence:'Quarterly roadmap review'}),
         tro=mk({name:'Trombetta',color:'#db2777',country:'USA'}),
         mar=mk({name:'Marlin Technologies',color:'#0d9488',notes:'New supplier — line card coming soon'});
-  const markets=[['Agriculture','active'],['Construction','active'],['Mining','active'],['Submarine','active'],['Utility vehicles','considering']].map(([name,status])=>mk({name,status}));
+  const markets=[['Agriculture','active'],['Construction','active'],['Mining','active'],['Marine','active'],['Utility vehicles','considering']].map(([name,status])=>mk({name,status}));
   const P=o=>mk({markets:[],...o});
   const c200=P({supplier_id:stw.id,part_number:'C-200',name:'Mobile controller, 32 I/O (sample)',category:'controller',lifecycle:'nrnd',supplier_release_date:rel(-62),onboard_date:rel(-58),nrnd_date:rel(-4),ltb_date:rel(5),eol_date:rel(14),markets:['Agriculture','Construction','Mining'],software_platform:'CODESYS V3.5 SP16',connector:'2× 48-pin',length_mm:180,width_mm:140,height_mm:42,weight_g:520,mounting:'4× M6',ip_rating:'IP67'});
   const c300=P({supplier_id:stw.id,part_number:'C-300',name:'Mobile controller, 48 I/O (sample)',category:'controller',lifecycle:'active',supplier_release_date:rel(-15),onboard_date:rel(-10),markets:['Agriculture','Construction','Mining','Utility vehicles'],software_platform:'CODESYS V3.5 SP19',connector:'2× 48-pin (revised pinout)',length_mm:188,width_mm:140,height_mm:42,weight_g:560,mounting:'4× M6',ip_rating:'IP67 / IP69K'});
   const c400=P({supplier_id:stw.id,part_number:'C-400S',name:'Safety controller, PL d (sample)',category:'controller',lifecycle:'evaluating',supplier_release_date:rel(6),markets:['Construction','Mining'],software_platform:'CODESYS Safety',connector:'3× 40-pin',length_mm:210,width_mm:150,height_mm:45});
   const t10=P({supplier_id:stw.id,part_number:'T-10',name:'Telematics gateway, 4G (sample)',category:'telematics',lifecycle:'ltb',supplier_release_date:rel(-74),onboard_date:rel(-70),nrnd_date:rel(-11),ltb_date:rel(-1),eol_date:rel(8),markets:['Agriculture','Construction','Mining'],software_platform:'Cloud API v1 (REST)',connector:'1× 18-pin + 2× FAKRA',length_mm:150,width_mm:110,height_mm:38,weight_g:380,ip_rating:'IP67'});
   const t20=P({supplier_id:stw.id,part_number:'T-20',name:'Telematics gateway, LTE-M/5G (sample)',category:'telematics',lifecycle:'active',supplier_release_date:rel(-9),onboard_date:rel(-5),markets:['Agriculture','Construction','Mining'],software_platform:'Cloud API v2 (MQTT)',connector:'1× 18-pin + 2× FAKRA',length_mm:150,width_mm:110,height_mm:38,weight_g:395,ip_rating:'IP67'});
-  const io16=P({supplier_id:stw.id,part_number:'IO-16',name:'CAN I/O expansion module (sample)',category:'module',lifecycle:'active',supplier_release_date:rel(-42),onboard_date:rel(-39),markets:['Agriculture','Construction','Mining','Submarine'],software_platform:'CANopen',connector:'1× 26-pin',length_mm:120,width_mm:90,height_mm:35});
+  const io16=P({supplier_id:stw.id,part_number:'IO-16',name:'CAN I/O expansion module (sample)',category:'module',lifecycle:'active',supplier_release_date:rel(-42),onboard_date:rel(-39),markets:['Agriculture','Construction','Mining','Marine'],software_platform:'CANopen',connector:'1× 26-pin',length_mm:120,width_mm:90,height_mm:35});
   const pdm8=P({supplier_id:tro.id,part_number:'PDM-8',name:'Power distribution module (sample)',category:'module',lifecycle:'active',supplier_release_date:rel(-32),onboard_date:rel(-27),nrnd_date:rel(9),markets:['Construction','Utility vehicles'],software_platform:'Fixed logic',connector:'Ring terminals + 12-pin',length_mm:160,width_mm:120,height_mm:60});
   const pdm12=P({supplier_id:tro.id,part_number:'PDM-12',name:'Smart power distribution, J1939 (sample)',category:'module',lifecycle:'onboarding',supplier_release_date:rel(-2),onboard_date:rel(3),markets:['Construction','Utility vehicles'],software_platform:'J1939 config tool',connector:'2× 24-pin sealed',length_mm:170,width_mm:125,height_mm:58});
-  const ts2=P({supplier_id:mar.id,part_number:'TS-2',name:'Dual-axis tilt sensor (sample)',category:'sensor',lifecycle:'evaluating',supplier_release_date:rel(2),markets:['Construction','Mining','Submarine'],connector:'M12 5-pin',ip_rating:'IP68'});
-  const ps4=P({supplier_id:mar.id,part_number:'PS-400',name:'Pressure sensor, 400 bar (sample)',category:'sensor',lifecycle:'evaluating',supplier_release_date:rel(5),markets:['Submarine','Mining'],connector:'M12 4-pin',ip_rating:'IP69K'});
+  const ts2=P({supplier_id:mar.id,part_number:'TS-2',name:'Dual-axis tilt sensor (sample)',category:'sensor',lifecycle:'evaluating',supplier_release_date:rel(2),markets:['Construction','Mining','Marine'],connector:'M12 5-pin',ip_rating:'IP68'});
+  const ps4=P({supplier_id:mar.id,part_number:'PS-400',name:'Pressure sensor, 400 bar (sample)',category:'sensor',lifecycle:'evaluating',supplier_release_date:rel(5),markets:['Marine','Mining'],connector:'M12 4-pin',ip_rating:'IP69K'});
   const products=[c200,c300,c400,t10,t20,io16,pdm8,pdm12,ts2,ps4];
   const tr1=mk({from_product_id:c200.id,to_product_id:c300.id,kind:'form_fit',effort_weeks:6,software_impact:'minor',software_notes:'Recompile on SP19; two I/O library blocks renamed.',harness_impact:'minor',harness_notes:'Same connectors; 6 pins remapped — harness rev or adapter.',mechanical_impact:'minor',mechanical_notes:'+8 mm length, same bolt pattern.'});
   const tr2=mk({from_product_id:t10.id,to_product_id:t20.id,kind:'drop_in',effort_weeks:10,software_impact:'major',software_notes:'Cloud API moves REST → MQTT; customer back-end integration must be updated.',harness_impact:'none',mechanical_impact:'none'});
@@ -642,9 +642,20 @@ document.addEventListener('submit',async e=>{
     const top=S.stack[S.stack.length-1],F=FORMS[top.table],o=collect(f,F.fields());
     if(top.table==='transitions'&&o.from_product_id===o.to_product_id)return toast('From and To must be different products.');
     if(top.id)o.id=top.id;
-    try{await save(top.table,o);toast('Saved');S.stack.pop();renderMain();renderSheet()}catch(err){toast(errMsg(err))}
+    const oldMarket=top.table==='markets'&&top.id?byId('markets',top.id)?.name:null;
+    try{await save(top.table,o);
+      if(oldMarket&&o.name&&oldMarket!==o.name)await renameMarket(oldMarket,o.name);
+      toast('Saved');S.stack.pop();renderMain();renderSheet()}catch(err){toast(errMsg(err))}
   }
 });
+
+/* renaming a market also relabels the products and customers tagged with it */
+async function renameMarket(from,to){
+  for(const p of S.data.products.filter(p=>(p.markets||[]).includes(from)))
+    await save('products',{id:p.id,markets:[...new Set(p.markets.map(m=>m===from?to:m))]});
+  for(const c of S.data.customers.filter(c=>c.market===from))
+    await save('customers',{id:c.id,market:to});
+}
 
 /* ---------- boot ---------- */
 function renderLogin(){
