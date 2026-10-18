@@ -292,6 +292,8 @@ const prodOpts=()=>S.data.products.slice().sort((a,b)=>a.part_number.localeCompa
 const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>[c.id,c.name]);
 const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
 const IMP=[['unknown','Not assessed'],['none','None'],['minor','Minor'],['major','Major']];
+const TTYPES=['Direct replacement','Functional successor','Variant / derivative','Family expansion','Software platform migration'];
+const ttag=t=>`<span class="tag">${esc(t.transition_type||KIND[t.kind]||'')}</span>${t.transition_type&&KIND[t.kind]?`<span class="tag">${KIND[t.kind]}</span>`:''}`;
 const BASIS=[['Stated on website','Stated on website'],['Supplier roadmap','Supplier roadmap'],['Internal (product manager)','Internal (product manager)'],['Inferred - confirm','Inferred - confirm']];
 const FORMS={
  products:{title:'Product',defaults:{lifecycle:'evaluating',category:'controller',markets:[]},fields:()=>[
@@ -314,8 +316,13 @@ const FORMS={
   {k:'status',l:'PN status'},{k:'successor_pn',l:'Successor PN'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'notes',l:'Notes',t:'textarea'}]},
  transitions:{title:'Transition',defaults:{kind:'form_fit',software_impact:'unknown',harness_impact:'unknown',mechanical_impact:'unknown',basis:'Inferred - confirm'},fields:()=>[
   {h:'Products'},{k:'from_product_id',l:'From (outgoing)',t:'select',o:prodOpts(),req:1},{k:'to_product_id',l:'To (successor)',t:'select',o:prodOpts(),req:1},
-  {k:'kind',l:'Type',t:'select',o:Object.entries(KIND),req:1},{k:'basis',l:'Basis',t:'select',o:BASIS},{k:'effort_weeks',l:'Typical customer effort (weeks)',t:'number'},
+  {k:'transition_type',l:'Transition type',t:'select',o:TTYPES.map(x=>[x,x])},
+  {k:'kind',l:'Customer fit',t:'select',o:Object.entries(KIND),req:1},{k:'basis',l:'Basis',t:'select',o:BASIS},
+  {k:'pin_compatible',l:'Pin / connector compatible',t:'select',o:[['Y','Yes'],['N','No'],['Partial','Partial']]},
+  {k:'effort_weeks',l:'Typical customer effort (weeks)',t:'number'},
   {k:'capability_gaps',l:'Capability gaps / not carried over',t:'textarea'},
+  {h:'Supplier dates & support'},{k:'supplier_notice_date',l:'Supplier notice date',t:'date'},{k:'ltb_date',l:'Last-time buy (outgoing product)',t:'date'},
+  {k:'migration_support',l:'Migration support we offer',t:'textarea'},
   {h:'Software'},{k:'software_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'software_notes',l:'What changes',t:'textarea'},
   {h:'Harness & connectors'},{k:'harness_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'harness_notes',l:'What changes',t:'textarea'},
   {h:'Mechanical & dimensions'},{k:'mechanical_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'mechanical_notes',l:'What changes',t:'textarea'},
@@ -464,7 +471,7 @@ function trCard(t){
   const bt=basisTag(t.basis);
   return`<div class="card" data-act="transition" data-id="${t.id}">
    <div class="ac"><div class="mini"><b>${esc(a.part_number)}</b><div style="margin-top:3px">${badge(phase(a))}</div></div><div class="arr">→</div><div class="mini"><b>${esc(b.part_number)}</b><div style="margin-top:3px">${badge(phase(b))}</div></div></div>
-   <div class="chips wrap" style="margin-top:10px"><span class="tag">${esc(t.transition_type||KIND[t.kind]||'')}</span>${bt}${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
+   <div class="chips wrap" style="margin-top:10px">${ttag(t)}${bt}${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
    <div class="row" style="margin-top:10px"><span class="mut">${cps.length?`${done}/${cps.length} customers moved`:'No customers linked'}</span>${cps.length?`<div class="prog"><i style="width:${Math.round(done/cps.length*100)}%"></i></div>`:''}${risk?`<span class="pill" style="--c:#dc2626">${risk} at risk</span>`:''}</div></div>`;
 }
 function viewTransitions(){
@@ -557,9 +564,10 @@ const SHEETS={
   return{title:`${a.part_number} → ${b.part_number}`,right:canEdit()?`<button class="btn ghost" data-act="edit" data-arg="transitions" data-id="${t.id}">Edit</button>`:'',body:`
    <div class="ac"><div class="mini" data-act="product" data-id="${a.id}"><span class="mut" style="font-size:11px">FROM</span><div class="pn">${esc(a.part_number)}</div><div class="mut ell" style="font-size:12px">${esc(a.name)}</div><div style="margin-top:4px">${badge(phase(a))}</div>${a.eol_date?`<div class="mut" style="font-size:11.5px;margin-top:4px">EOL ${fmtMY(a.eol_date)}</div>`:''}</div><div class="arr">→</div>
    <div class="mini" data-act="product" data-id="${b.id}"><span class="mut" style="font-size:11px">TO</span><div class="pn">${esc(b.part_number)}</div><div class="mut ell" style="font-size:12px">${esc(b.name)}</div><div style="margin-top:4px">${badge(phase(b))}</div></div></div>
-   <div class="row" style="margin-top:12px;flex-wrap:wrap"><span class="tag">${esc(t.transition_type||KIND[t.kind])}</span>${basisTag(t.basis)}${t.pin_compatible?`<span class="tag">Pin-compatible: ${esc(t.pin_compatible)}</span>`:''}${t.effort_weeks?`<span class="tag">~${esc(t.effort_weeks)} wks customer effort</span>`:''}</div>
+   <div class="row" style="margin-top:12px;flex-wrap:wrap">${ttag(t)}${basisTag(t.basis)}${t.pin_compatible?`<span class="tag">Pin-compatible: ${esc(t.pin_compatible)}</span>`:''}${t.effort_weeks?`<span class="tag">~${esc(t.effort_weeks)} wks customer effort</span>`:''}</div>
    <div class="sec"><h2>Customer impact</h2></div>
    <div class="card">${imp('Software','software_impact','software_notes')}${imp('Harness & connectors','harness_impact','harness_notes')}${imp('Mechanical','mechanical_impact','mechanical_notes')}</div>
+   ${t.supplier_notice_date||t.ltb_date||t.migration_support?`<div class="card kv" style="margin-top:10px">${t.supplier_notice_date?kvItem('Supplier notice',fmt(t.supplier_notice_date),relTxt(t.supplier_notice_date)):''}${t.ltb_date?kvItem('Last-time buy',fmt(t.ltb_date),relTxt(t.ltb_date)):''}${t.migration_support?`<div style="grid-column:1/-1"><span>Migration support we offer</span><b style="white-space:pre-wrap">${esc(t.migration_support)}</b></div>`:''}</div>`:''}
    ${t.capability_gaps?`<div class="sec"><h2>Not carried over</h2></div><div class="card" style="white-space:pre-wrap;border-left:4px solid var(--warn)">${esc(t.capability_gaps)}</div>`:''}
    ${t.notes?`<div class="card" style="white-space:pre-wrap">${esc(t.notes)}</div>`:''}
    <div class="sec"><h2>Spec comparison</h2><span class="mut">changes highlighted</span></div>
