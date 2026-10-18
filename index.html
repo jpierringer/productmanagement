@@ -150,14 +150,16 @@ const LIFECYCLE=[
  {k:'rejected',l:'Not onboarded',c:'#6b7280'}];
 const LC=Object.fromEntries(LIFECYCLE.map(x=>[x.k,x]));
 const RANK={evaluating:0,onboarding:1,active:2,nrnd:3,ltb:4,eol:5};
-const CATEGORIES=[['controller','Controllers'],['telematics','Telematics'],['module','Modules'],['sensor','Sensors'],['display','Displays'],['other','Other']];
-const CATS1={controller:'Controller',telematics:'Telematics',module:'Module',sensor:'Sensor',display:'Display',other:'Other'};
-const IMPACT={none:{l:'None',c:'#16a34a'},minor:{l:'Minor',c:'#d97706'},major:{l:'Major',c:'#dc2626'}};
+const CATEGORIES=[['controller','Controllers'],['telematics','Telematics'],['display','Displays'],['module','I/O & modules'],['sensor','Sensors'],['software','Software'],['other','Other']];
+const CATS1={controller:'Controller',telematics:'Telematics',module:'I/O module',sensor:'Sensor',display:'Display',software:'Software',other:'Other'};
+const IMPACT={unknown:{l:'Not assessed',c:'#94a3b8'},none:{l:'None',c:'#16a34a'},minor:{l:'Minor',c:'#d97706'},major:{l:'Major',c:'#dc2626'}};
+const WEBSTATUS=['Coming Soon','New','Active (no badge)','Previous Gen','End of Life','Not on website'];
 const KIND={drop_in:'Drop-in',form_fit:'Form-fit',redesign:'Redesign'};
 const MIG=[['not_started','Not started'],['notified','Customer notified'],['evaluating','Evaluating'],['sampling','Sampling'],['validating','Validating'],['released','Released to production'],['complete','Complete'],['at_risk','At risk']];
 const MIGC={not_started:'#94a3b8',notified:'#0ea5e9',evaluating:'#8b5cf6',sampling:'#6366f1',validating:'#d97706',released:'#16a34a',complete:'#16a34a',at_risk:'#dc2626'};
 const EVK=[['announcement','Supplier announcement'],['pcn','PCN / change notice'],['release','Release'],['nrnd','NRND'],['ltb','Last-time buy'],['eol','End of life'],['milestone','Milestone'],['note','Note']];
-const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events'];
+const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers'];
+const OPTIONAL=['part_numbers']; // added in schema upgrade v2 — app still loads if it hasn't been run
 const LW=118, MW=24;
 
 /* ---------- state ---------- */
@@ -191,6 +193,7 @@ function phase(p){
 }
 const badge=k=>{const x=LC[k]||LC.evaluating;return`<span class="badge" style="--c:${x.c}">${x.l}</span>`};
 const impPill=(lab,k)=>{const x=IMPACT[k]||IMPACT.none;return`<span class="pill" style="--c:${x.c}">${lab}: ${x.l}</span>`};
+const basisTag=b=>!b?'':/infer|confirm/i.test(b)?`<span class="pill" style="--c:#d97706">⚠ ${esc(b)}</span>`:`<span class="pill" style="--c:#0ea5e9">${esc(b)}</span>`;
 const migBadge=k=>`<span class="badge" style="--c:${MIGC[k]||'#94a3b8'}">${esc((MIG.find(m=>m[0]===k)||[,k])[1])}</span>`;
 function nextMilestone(p){
   for(const[k,l]of[['nrnd_date','NRND'],['ltb_date','LTB'],['eol_date','EOL']]){if(p[k]&&d(p[k])>=today)return{l,date:p[k]}}
@@ -212,8 +215,8 @@ const Demo={key:'rm_demo_v1',
   save(x){try{localStorage.setItem(this.key,JSON.stringify(x))}catch(e){}}};
 async function loadAll(){
   if(S.mode==='demo'){S.data=Demo.load();return}
-  const res=await Promise.all(TABLES.map(t=>S.sb.from(t).select('*')));
-  res.forEach((r,i)=>{if(r.error)throw r.error;S.data[TABLES[i]]=r.data||[]});
+  const res=await Promise.all(TABLES.map(t=>S.sb.from(t).select('*').range(0,9999)));
+  res.forEach((r,i)=>{const t=TABLES[i];if(r.error){if(OPTIONAL.includes(t)){S.data[t]=[];return}throw r.error}S.data[t]=r.data||[]});
 }
 function clean(row){const o={};for(const[k,v]of Object.entries(row)){if(['created_at','updated_at','updated_by'].includes(k)||v===undefined)continue;o[k]=v===''?null:v}return o}
 async function save(table,row){
@@ -235,7 +238,7 @@ async function remove(table,id){
     if(table==='products'&&S.data.customer_products.some(c=>c.product_id===id))throw new Error('Remove this product from its customers first.');
     if(table==='suppliers'&&S.data.products.some(p=>p.supplier_id===id))throw new Error('This supplier still has products.');
     S.data[table]=S.data[table].filter(x=>x.id!==id);
-    if(table==='products'){S.data.transitions=S.data.transitions.filter(t=>t.from_product_id!==id&&t.to_product_id!==id);S.data.events=S.data.events.filter(e=>e.product_id!==id)}
+    if(table==='products'){S.data.transitions=S.data.transitions.filter(t=>t.from_product_id!==id&&t.to_product_id!==id);S.data.events=S.data.events.filter(e=>e.product_id!==id);S.data.part_numbers=S.data.part_numbers.filter(x=>x.product_id!==id)}
     if(table==='suppliers')S.data.events=S.data.events.filter(e=>e.supplier_id!==id);
     if(table==='customers')S.data.customer_products=S.data.customer_products.filter(c=>c.customer_id!==id);
     if(table==='transitions')S.data.customer_products.forEach(c=>{if(c.transition_id===id)c.transition_id=null});
@@ -288,22 +291,31 @@ const supOpts=()=>S.data.suppliers.slice().sort((a,b)=>a.name.localeCompare(b.na
 const prodOpts=()=>S.data.products.slice().sort((a,b)=>a.part_number.localeCompare(b.part_number)).map(p=>[p.id,`${p.part_number} — ${p.name}`]);
 const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>[c.id,c.name]);
 const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
-const IMP=[['none','None'],['minor','Minor'],['major','Major']];
+const IMP=[['unknown','Not assessed'],['none','None'],['minor','Minor'],['major','Major']];
+const BASIS=[['Stated on website','Stated on website'],['Supplier roadmap','Supplier roadmap'],['Internal (product manager)','Internal (product manager)'],['Inferred - confirm','Inferred - confirm']];
 const FORMS={
  products:{title:'Product',defaults:{lifecycle:'evaluating',category:'controller',markets:[]},fields:()=>[
-  {h:'Product'},{k:'part_number',l:'Part number',req:1},{k:'name',l:'Description',req:1},
+  {h:'Product'},{k:'part_number',l:'Model / part number',req:1},{k:'name',l:'Description',req:1},
   {k:'supplier_id',l:'Supplier',t:'select',o:supOpts(),req:1},{k:'category',l:'Category',t:'select',o:Object.entries(CATS1),req:1},
+  {k:'family',l:'Series / family'},{k:'sub_type',l:'Sub-type'},{k:'product_code',l:'Product ID (e.g. CTL-17)'},
   {k:'lifecycle',l:'Lifecycle status',t:'select',o:LIFECYCLE.map(x=>[x.k,x.l]),req:1},
+  {k:'website_status',l:'Website status',t:'select',o:WEBSTATUS.map(x=>[x,x])},
   {k:'markets',l:'Markets',t:'multi',o:S.data.markets.map(m=>[m.name,m.name+(m.status==='considering'?' (considering)':'')])},
-  {h:'Lifecycle dates'},{k:'supplier_release_date',l:'Supplier release',t:'date'},{k:'onboard_date',l:'Onboarded by us',t:'date'},
-  {k:'nrnd_date',l:'NRND (not recommended for new designs)',t:'date'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'eol_date',l:'End of life',t:'date'},
-  {h:'Fit · form · function'},{k:'software_platform',l:'Software platform / version'},{k:'connector',l:'Connectors / pinout'},
+  {h:'Lifecycle dates'},{k:'supplier_release_date',l:'Supplier release',t:'date'},{k:'sample_date',l:'Samples available',t:'date'},{k:'onboard_date',l:'Onboarded by us',t:'date'},
+  {k:'nrnd_date',l:'NRND / supplier EOL notice',t:'date'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'last_ship_date',l:'Last ship',t:'date'},
+  {k:'end_of_support_date',l:'End of support',t:'date'},{k:'eol_date',l:'End of life (timeline end)',t:'date'},
+  {h:'Fit · form · function'},{k:'software_platform',l:'Software platform / version'},{k:'functional_safety',l:'Functional safety'},{k:'isobus',l:'ISOBUS'},{k:'connector',l:'Connectors / pinout'},
   {row:[{k:'length_mm',l:'Length mm',t:'number'},{k:'width_mm',l:'Width mm',t:'number'},{k:'height_mm',l:'Height mm',t:'number'}]},
-  {k:'weight_g',l:'Weight (g)',t:'number'},{k:'mounting',l:'Mounting'},{k:'ip_rating',l:'IP rating'},{k:'datasheet_url',l:'Datasheet link',t:'url'},
+  {k:'weight_g',l:'Weight (g)',t:'number'},{k:'mounting',l:'Mounting'},{k:'ip_rating',l:'IP rating'},
+  {h:'Links'},{k:'product_url',l:'Product page',t:'url'},{k:'datasheet_url',l:'Datasheet link',t:'url'},
   {h:'Notes'},{k:'notes',l:'Notes',t:'textarea'}]},
- transitions:{title:'Transition',defaults:{kind:'form_fit',software_impact:'none',harness_impact:'none',mechanical_impact:'none'},fields:()=>[
+ part_numbers:{title:'Part number',fields:()=>[
+  {k:'product_id',l:'Product',t:'select',o:prodOpts(),req:1},{k:'part_number',l:'Part number',req:1},{k:'variant',l:'Variant / configuration'},
+  {k:'status',l:'PN status'},{k:'successor_pn',l:'Successor PN'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'notes',l:'Notes',t:'textarea'}]},
+ transitions:{title:'Transition',defaults:{kind:'form_fit',software_impact:'unknown',harness_impact:'unknown',mechanical_impact:'unknown',basis:'Inferred - confirm'},fields:()=>[
   {h:'Products'},{k:'from_product_id',l:'From (outgoing)',t:'select',o:prodOpts(),req:1},{k:'to_product_id',l:'To (successor)',t:'select',o:prodOpts(),req:1},
-  {k:'kind',l:'Type',t:'select',o:Object.entries(KIND),req:1},{k:'effort_weeks',l:'Typical customer effort (weeks)',t:'number'},
+  {k:'kind',l:'Type',t:'select',o:Object.entries(KIND),req:1},{k:'basis',l:'Basis',t:'select',o:BASIS},{k:'effort_weeks',l:'Typical customer effort (weeks)',t:'number'},
+  {k:'capability_gaps',l:'Capability gaps / not carried over',t:'textarea'},
   {h:'Software'},{k:'software_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'software_notes',l:'What changes',t:'textarea'},
   {h:'Harness & connectors'},{k:'harness_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'harness_notes',l:'What changes',t:'textarea'},
   {h:'Mechanical & dimensions'},{k:'mechanical_impact',l:'Impact',t:'select',o:IMP,req:1},{k:'mechanical_notes',l:'What changes',t:'textarea'},
@@ -428,19 +440,20 @@ function tlRow(p,X,W,grid){
 /* Products tab */
 const PHASEF={all:null,pipeline:['evaluating','onboarding'],active:['active'],phasing:['nrnd','ltb'],eol:['eol','rejected']};
 function viewProducts(){
-  return`<input id="q" type="search" placeholder="Search part number, name, connector…" value="${esc(S.pf.q)}" autocomplete="off">
+  return`<input id="q" type="search" placeholder="Search model, part number, family…" value="${esc(S.pf.q)}" autocomplete="off">
   <div class="chips" style="margin:10px 0 6px">${[['all','All'],['pipeline','Evaluating'],['active','Active'],['phasing','Phasing out'],['eol','EOL / not onboarded']].map(([k,l])=>`<button class="chip ${S.pf.phase===k?'on':''}" data-act="phase" data-arg="${k}">${l}</button>`).join('')}</div>
   <div class="chips" style="margin-bottom:12px">${[['all','All types'],...CATEGORIES].map(([k,l])=>`<button class="chip ${S.pf.cat===k?'on':''}" data-act="cat" data-arg="${k}">${l}</button>`).join('')}</div>
   <div id="plist">${productList()}</div>${fab('products')}`;
 }
 function productList(){
   const q=S.pf.q.trim().toLowerCase(),pf=PHASEF[S.pf.phase];
-  const L=S.data.products.filter(p=>(!pf||pf.includes(phase(p)))&&(S.pf.cat==='all'||p.category===S.pf.cat)&&(!q||[p.part_number,p.name,p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q))).sort((a,b)=>a.part_number.localeCompare(b.part_number));
+  const pnHit=q?new Set(S.data.part_numbers.filter(x=>String(x.part_number).toLowerCase().includes(q)).map(x=>x.product_id)):null;
+  const L=S.data.products.filter(p=>(!pf||pf.includes(phase(p)))&&(S.pf.cat==='all'||p.category===S.pf.cat)&&(!q||pnHit.has(p.id)||[p.part_number,p.name,p.family,p.sub_type,p.product_code,p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q))).sort((a,b)=>a.part_number.localeCompare(b.part_number));
   return L.length?L.map(productItem).join(''):'<div class="empty">No products found.</div>';
 }
 function productItem(p){
   const s=sup(p),nm=nextMilestone(p);
-  return`<div class="li" data-act="product" data-id="${p.id}"><i class="dot" style="background:${esc(s?.color||'#999')}"></i><div class="grow"><div class="pn">${esc(p.part_number)} <span class="mut" style="font-weight:400">· ${esc(CATS1[p.category]||'')}</span></div><div class="mut ell">${esc(p.name)}</div>${nm?`<div class="mut" style="font-size:12px">${nm.l} ${relTxt(nm.date)}</div>`:''}</div>${badge(phase(p))}</div>`;
+  return`<div class="li" data-act="product" data-id="${p.id}"><i class="dot" style="background:${esc(s?.color||'#999')}"></i><div class="grow"><div class="pn">${esc(p.part_number)} <span class="mut" style="font-weight:400">· ${esc(p.sub_type||CATS1[p.category]||'')}</span></div><div class="mut ell">${esc(p.name)}</div>${nm?`<div class="mut" style="font-size:12px">${nm.l} ${relTxt(nm.date)}</div>`:''}</div>${badge(phase(p))}</div>`;
 }
 
 /* Transitions tab */
@@ -448,9 +461,10 @@ function cpsFor(t){return S.data.customer_products.filter(c=>c.transition_id===t
 function trCard(t){
   const a=byId('products',t.from_product_id),b=byId('products',t.to_product_id);if(!a||!b)return'';
   const cps=cpsFor(t),done=cps.filter(c=>['released','complete'].includes(c.transition_status)).length,risk=cps.filter(c=>c.transition_status==='at_risk').length;
+  const bt=basisTag(t.basis);
   return`<div class="card" data-act="transition" data-id="${t.id}">
    <div class="ac"><div class="mini"><b>${esc(a.part_number)}</b><div style="margin-top:3px">${badge(phase(a))}</div></div><div class="arr">→</div><div class="mini"><b>${esc(b.part_number)}</b><div style="margin-top:3px">${badge(phase(b))}</div></div></div>
-   <div class="chips wrap" style="margin-top:10px"><span class="tag">${KIND[t.kind]||''}</span>${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
+   <div class="chips wrap" style="margin-top:10px"><span class="tag">${esc(t.transition_type||KIND[t.kind]||'')}</span>${bt}${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
    <div class="row" style="margin-top:10px"><span class="mut">${cps.length?`${done}/${cps.length} customers moved`:'No customers linked'}</span>${cps.length?`<div class="prog"><i style="width:${Math.round(done/cps.length*100)}%"></i></div>`:''}${risk?`<span class="pill" style="--c:#dc2626">${risk} at risk</span>`:''}</div></div>`;
 }
 function viewTransitions(){
@@ -503,17 +517,26 @@ const SHEETS={
   const out=S.data.transitions.filter(t=>t.from_product_id===p.id),inn=S.data.transitions.filter(t=>t.to_product_id===p.id);
   const cps=S.data.customer_products.filter(c=>c.product_id===p.id),evs=S.data.events.filter(x=>x.product_id===p.id).sort((a,b)=>b.event_date.localeCompare(a.event_date));
   const dims=[p.length_mm,p.width_mm,p.height_mm].some(v=>v!=null)?`${p.length_mm??'?'} × ${p.width_mm??'?'} × ${p.height_mm??'?'} mm`:'';
+  const pns=S.data.part_numbers.filter(x=>x.product_id===p.id).sort((a,b)=>String(a.part_number).localeCompare(String(b.part_number)));
+  const spec=Object.entries(p.specs||{});
+  const dateRows=[['supplier_release_date','Supplier release'],['sample_date','Samples'],['onboard_date','Onboarded'],['nrnd_date','NRND / EOL notice'],['ltb_date','Last-time buy'],['last_ship_date','Last ship'],['end_of_support_date','End of support'],['eol_date','End of life']].filter(([k],i)=>i<5||p[k]);
+  const pnRow=x=>`<div class="ev" ${canEdit()?`data-act="edit" data-arg="part_numbers" data-id="${x.id}"`:''}><div class="grow"><b>${esc(x.part_number)}</b>${x.variant?` <span class="mut">· ${esc(x.variant)}</span>`:''}${x.successor_pn?`<div class="mut">→ ${esc(x.successor_pn)}</div>`:''}</div>${x.status?`<span class="tag">${esc(x.status)}</span>`:''}${x.ltb_date?`<span class="mut" style="font-size:12px">LTB ${fmtMY(x.ltb_date)}</span>`:''}</div>`;
   return{title:p.part_number,right:canEdit()?`<button class="btn ghost" data-act="edit" data-arg="products" data-id="${p.id}">Edit</button>`:'',body:`
    <div class="hero"><h2>${esc(p.part_number)}</h2><div class="mut">${esc(p.name)}</div>
-   <div class="row" style="margin-top:8px;flex-wrap:wrap">${badge(ph)}<span class="tag"><i class="dot" style="background:${esc(s?.color||'#999')};width:7px;height:7px"></i> ${esc(s?.name||'')}</span><span class="tag">${esc(CATS1[p.category]||'')}</span></div></div>
+   <div class="row" style="margin-top:8px;flex-wrap:wrap">${badge(ph)}<span class="tag"><i class="dot" style="background:${esc(s?.color||'#999')};width:7px;height:7px"></i> ${esc(s?.name||'')}</span><span class="tag">${esc(p.family||CATS1[p.category]||'')}</span>${p.website_status?`<span class="tag">Web: ${esc(p.website_status)}</span>`:''}</div>
+   ${p.sub_type?`<div class="mut" style="margin-top:6px">${esc(p.sub_type)}${p.product_code?' · '+esc(p.product_code):''}</div>`:''}</div>
    ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
    <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
-    ${[['supplier_release_date','Supplier release'],['onboard_date','Onboarded'],['nrnd_date','NRND'],['ltb_date','Last-time buy'],['eol_date','End of life']].map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
+    ${dateRows.map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
    <div class="sec"><h2>Fit · form · function</h2></div><div class="card kv">
-    ${kvItem('Software',esc(p.software_platform))}${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}</div>
+    ${kvItem('Software',esc(p.software_platform))}${kvItem('Functional safety',esc(p.functional_safety))}${p.isobus?kvItem('ISOBUS',esc(p.isobus)):''}${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}
+    ${p.opensyde_compatible||p.beacon_compatible?kvItem('Compatible with',[p.opensyde_compatible&&'openSYDE',p.beacon_compatible&&'Beacon'].filter(Boolean).join(', ')):''}</div>
    ${p.markets?.length?`<div class="chips wrap" style="margin-top:4px">${p.markets.map(m=>`<span class="chip">${esc(m)}</span>`).join('')}</div>`:''}
-   ${p.datasheet_url?`<p><a href="${esc(p.datasheet_url)}" target="_blank" rel="noopener">Open datasheet ↗</a></p>`:''}
+   ${spec.length?`<details class="card" style="margin-top:10px"><summary style="font-weight:600;cursor:pointer">Datasheet specs (${spec.length})</summary><table class="cmp" style="margin-top:8px">${spec.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></details>`:''}
+   ${p.product_url||p.datasheet_url?`<p class="row" style="gap:16px">${p.product_url?`<a href="${esc(p.product_url)}" target="_blank" rel="noopener">Product page ↗</a>`:''}${p.datasheet_url?`<a href="${esc(p.datasheet_url)}" target="_blank" rel="noopener">Datasheet ↗</a>`:''}</p>`:''}
    ${p.notes?`<div class="card" style="margin-top:10px;white-space:pre-wrap">${esc(p.notes)}</div>`:''}
+   <div class="sec"><h2>Part numbers${pns.length?' · '+pns.length:''}</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="part_numbers" data-def="${esc(JSON.stringify({product_id:p.id}))}">+ Add</button>`:''}</div>
+   ${pns.length?`<div class="card">${pns.slice(0,6).map(pnRow).join('')}${pns.length>6?`<details><summary class="btn ghost sm" style="list-style:none;cursor:pointer">Show all ${pns.length}</summary>${pns.slice(6).map(pnRow).join('')}</details>`:''}</div>`:'<div class="card empty" style="padding:16px">No part numbers listed.</div>'}
    <div class="sec"><h2>Successor</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="transitions" data-def="${esc(JSON.stringify({from_product_id:p.id}))}">+ Add</button>`:''}</div>
    ${out.length?out.map(trCard).join(''):`<div class="card empty" style="padding:16px">${['nrnd','ltb','eol'].includes(ph)?'⚠️ Phasing out with no successor mapped.':'None defined.'}</div>`}
    ${inn.length?`<div class="sec"><h2>Replaces</h2></div>${inn.map(trCard).join('')}`:''}
@@ -526,15 +549,18 @@ const SHEETS={
   const t=byId('transitions',e.id);if(!t)return null;
   const a=byId('products',t.from_product_id),b=byId('products',t.to_product_id);if(!a||!b)return null;
   const CMP=[['software_platform','Software'],['connector','Connectors'],['length_mm','Length mm'],['width_mm','Width mm'],['height_mm','Height mm'],['weight_g','Weight g'],['mounting','Mounting'],['ip_rating','IP rating']];
-  const rows=CMP.map(([k,l])=>{const x=a[k],y=b[k],chg=String(x??'')!==String(y??'');let dl='';if(typeof x==='number'&&typeof y==='number'&&x!==y)dl=` <b style="color:var(--warn)">(${y-x>0?'+':''}${+(y-x).toFixed(2)})</b>`;return`<tr class="${chg?'chg':''}"><td>${l}</td><td>${esc(x??'—')}</td><td>${esc(y??'—')}${dl}</td></tr>`}).join('');
+  const sk=[...new Set([...Object.keys(a.specs||{}),...Object.keys(b.specs||{})])].filter(k=>!['Notes','Generation'].includes(k));
+  const vals=[...CMP.map(([k,l])=>[l,a[k],b[k]]),...sk.map(k=>[k,(a.specs||{})[k],(b.specs||{})[k]])].filter(([,x,y])=>x!=null||y!=null);
+  const rows=vals.map(([l,x,y])=>{const chg=String(x??'')!==String(y??'');let dl='';if(typeof x==='number'&&typeof y==='number'&&x!==y)dl=` <b style="color:var(--warn)">(${y-x>0?'+':''}${+(y-x).toFixed(2)})</b>`;return`<tr class="${chg?'chg':''}"><td>${l}</td><td>${esc(x??'—')}</td><td>${esc(y??'—')}${dl}</td></tr>`}).join('');
   const cps=cpsFor(t),done=cps.filter(c=>['released','complete'].includes(c.transition_status)).length;
   const imp=(lab,k,n)=>`<div class="impact"><div class="t">${lab}</div><div style="flex:1"><span class="pill" style="--c:${IMPACT[t[k]]?.c}">${IMPACT[t[k]]?.l}</span>${t[n]?`<div style="margin-top:5px;white-space:pre-wrap">${esc(t[n])}</div>`:''}</div></div>`;
   return{title:`${a.part_number} → ${b.part_number}`,right:canEdit()?`<button class="btn ghost" data-act="edit" data-arg="transitions" data-id="${t.id}">Edit</button>`:'',body:`
    <div class="ac"><div class="mini" data-act="product" data-id="${a.id}"><span class="mut" style="font-size:11px">FROM</span><div class="pn">${esc(a.part_number)}</div><div class="mut ell" style="font-size:12px">${esc(a.name)}</div><div style="margin-top:4px">${badge(phase(a))}</div>${a.eol_date?`<div class="mut" style="font-size:11.5px;margin-top:4px">EOL ${fmtMY(a.eol_date)}</div>`:''}</div><div class="arr">→</div>
    <div class="mini" data-act="product" data-id="${b.id}"><span class="mut" style="font-size:11px">TO</span><div class="pn">${esc(b.part_number)}</div><div class="mut ell" style="font-size:12px">${esc(b.name)}</div><div style="margin-top:4px">${badge(phase(b))}</div></div></div>
-   <div class="row" style="margin-top:12px;flex-wrap:wrap"><span class="tag">${KIND[t.kind]}</span>${t.effort_weeks?`<span class="tag">~${esc(t.effort_weeks)} wks customer effort</span>`:''}</div>
+   <div class="row" style="margin-top:12px;flex-wrap:wrap"><span class="tag">${esc(t.transition_type||KIND[t.kind])}</span>${basisTag(t.basis)}${t.pin_compatible?`<span class="tag">Pin-compatible: ${esc(t.pin_compatible)}</span>`:''}${t.effort_weeks?`<span class="tag">~${esc(t.effort_weeks)} wks customer effort</span>`:''}</div>
    <div class="sec"><h2>Customer impact</h2></div>
    <div class="card">${imp('Software','software_impact','software_notes')}${imp('Harness & connectors','harness_impact','harness_notes')}${imp('Mechanical','mechanical_impact','mechanical_notes')}</div>
+   ${t.capability_gaps?`<div class="sec"><h2>Not carried over</h2></div><div class="card" style="white-space:pre-wrap;border-left:4px solid var(--warn)">${esc(t.capability_gaps)}</div>`:''}
    ${t.notes?`<div class="card" style="white-space:pre-wrap">${esc(t.notes)}</div>`:''}
    <div class="sec"><h2>Spec comparison</h2><span class="mut">changes highlighted</span></div>
    <div class="card" style="padding:6px 8px"><table class="cmp"><tr><th></th><th>${esc(a.part_number)}</th><th>${esc(b.part_number)}</th></tr>${rows}</table></div>
