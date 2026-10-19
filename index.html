@@ -79,7 +79,7 @@ label.l{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bot
 .tl-q{position:absolute;top:22px;font-size:10px;color:var(--mut)}
 .tl-now{position:absolute;top:4px;font-size:10px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:1px 5px;transform:translateX(-50%);z-index:1}
 .tl-row{display:flex;height:44px;border-bottom:1px solid var(--line)}
-.tl-lab{position:sticky;left:0;z-index:2;width:var(--lw);flex:none;background:var(--card);border-right:1px solid var(--line);padding:6px 8px;overflow:hidden}
+.tl-lab{position:sticky;left:0;z-index:2;width:var(--lw);flex:none;background:var(--card);border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:-1px;padding:6px 8px;overflow:hidden}
 .tl-lab b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tl-lab span{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .tl-track{position:relative;flex:none}
@@ -87,6 +87,8 @@ label.l{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bot
 .tl-glab{position:sticky;left:0;z-index:2;background:var(--chip);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:7px 8px;white-space:nowrap}
 .bar{position:absolute;top:15px;height:14px;border-radius:7px}
 .mk{position:absolute;top:15px;width:12px;height:12px;transform:translateX(-6px) rotate(45deg);border:2px solid var(--card);border-radius:2px;z-index:1}
+.evm{position:absolute;top:6px;width:28px;height:32px;transform:translateX(-14px);z-index:1;cursor:pointer}
+.evm::before{content:"";position:absolute;left:7px;top:9px;width:11px;height:11px;transform:rotate(45deg);background:var(--card);border:3px solid var(--c);border-radius:2px;box-shadow:0 0 0 1.5px var(--card)}
 .tl-next{position:absolute;top:12px;font-size:11px;font-weight:700;color:var(--acc);white-space:nowrap;background:color-mix(in srgb,var(--acc) 12%,var(--card));padding:2px 6px;border-radius:6px}
 .tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);opacity:.55;z-index:1;pointer-events:none}
 .legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--mut);margin:8px 2px}
@@ -163,6 +165,7 @@ const KIND={drop_in:'Drop-in',form_fit:'Form-fit',redesign:'Redesign'};
 const MIG=[['not_started','Not started'],['notified','Customer notified'],['evaluating','Evaluating'],['sampling','Sampling'],['validating','Validating'],['released','Released to production'],['complete','Complete'],['at_risk','At risk']];
 const MIGC={not_started:'#94a3b8',notified:'#0ea5e9',evaluating:'#8b5cf6',sampling:'#6366f1',validating:'#d97706',released:'#16a34a',complete:'#16a34a',at_risk:'#dc2626'};
 const EVK=[['announcement','Supplier announcement'],['pcn','PCN / change notice'],['release','Release'],['nrnd','NRND'],['ltb','Last-time buy'],['eol','End of life'],['milestone','Milestone'],['note','Note']];
+const EVC={milestone:'#2563eb',announcement:'#0ea5e9',pcn:'#8b5cf6',release:'#16a34a',nrnd:'#d97706',ltb:'#ea580c',eol:'#dc2626',note:'#64748b'};
 const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers'];
 const OPTIONAL=['part_numbers']; // added in schema upgrade v2 — app still loads if it hasn't been run
 const LW=118, MW=24;
@@ -397,7 +400,7 @@ function viewRoadmap(){
   <div class="chips" style="margin-bottom:10px">${S.data.suppliers.map(s=>`<button class="chip ${S.f.hide.has(s.id)?'':'on'}" data-act="sup" data-id="${s.id}"><i class="dot" style="background:${esc(s.color)}"></i>${esc(s.name)}</button>`).join('')}
    <button class="chip ${S.f.showEol?'on':''}" data-act="eol">Include EOL</button></div>
   ${rows.length?timeline(rows):'<div class="card empty">No products match these filters.</div>'}
-  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span style="color:var(--acc);font-weight:600">→ successor</span></div>
+  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span><i style="background:var(--card);border:2.5px solid #2563eb;width:8px;height:8px;transform:rotate(45deg);border-radius:2px"></i>Event (tap)</span><span style="color:var(--acc);font-weight:600">→ successor</span></div>
   <div class="sec"><h2>Next 12 months</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="events">+ Event</button>`:''}</div>
   ${up.length?`<div class="card">${up.map(upItem).join('')}</div>`:'<div class="card empty">Nothing scheduled in the next 12 months.</div>'}`;
 }
@@ -445,6 +448,8 @@ function tlRow(p,X,W,grid){
     bars+=`<div class="bar" style="left:${x0}px;width:${x1-x0}px;${plan?`background:repeating-linear-gradient(135deg,${c}66 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1.5px ${c}`:`background:${c}`}"></div>`}
   if(ld)bars+=`<div class="mk" style="left:${X(ld)}px;background:#ea580c" title="LTB ${fmt(p.ltb_date)}"></div>`;
   if(ed)bars+=`<div class="mk" style="left:${X(ed)}px;background:#dc2626" title="EOL ${fmt(p.eol_date)}"></div>`;
+  S.data.events.filter(e=>e.product_id===p.id&&e.event_date).forEach(e=>{
+    bars+=`<div class="evm" style="left:${X(d(e.event_date))}px;--c:${EVC[e.kind]||'#2563eb'}" data-act="edit" data-arg="events" data-id="${e.id}" title="${esc(fmt(e.event_date)+' · '+e.title)}"></div>`});
   const tr=S.data.transitions.filter(t=>t.from_product_id===p.id);
   if(tr.length){const anchor=ed||ld||nd;if(anchor){const x=Math.min(X(anchor)+12,W-90);bars+=tr.slice(0,1).map(t=>`<div class="tl-next" style="left:${x}px" data-act="transition" data-id="${t.id}">→ ${esc(pnOf(t.to_product_id))}${tr.length>1?' +'+(tr.length-1):''}</div>`).join('')}}
   return`<div class="tl-row" data-act="product" data-id="${p.id}"><div class="tl-lab"><b><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:7px;height:7px;margin-right:5px;vertical-align:1px"></i>${esc(p.part_number)}</b><span>${esc(p.name)}</span></div><div class="tl-track" style="width:${W}px;${grid}">${bars}</div></div>`;
