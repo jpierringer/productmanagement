@@ -185,6 +185,7 @@ const fmt=s=>s?d(s).toLocaleDateString(undefined,{day:'numeric',month:'short',ye
 const fmtMY=s=>s?d(s).toLocaleDateString(undefined,{month:'short',year:'2-digit'}):'—';
 const daysUntil=s=>Math.round((d(s)-today)/864e5);
 function relTxt(s){if(!s)return'';const n=daysUntil(s),a=Math.abs(n);if(n===0)return'today';const t=a<60?a+' days':Math.round(a/30.4)+' mo';return n>0?'in '+t:t+' ago'}
+const tempPw=()=>S.mode==='live'&&!!S.user&&S.user.user_metadata?.pw_set!==true;
 const canEdit=()=>S.role==='editor'||S.role==='admin';
 const sup=p=>byId('suppliers',p?.supplier_id);
 const pnOf=id=>byId('products',id)?.part_number||'?';
@@ -388,7 +389,7 @@ function viewRoadmap(){
   const mig=S.data.customer_products.filter(needsMig).length;
   const rows=ps.filter(p=>{const ph=phase(p);return ph!=='rejected'&&!S.f.hide.has(p.supplier_id)&&(S.f.showEol||ph!=='eol')});
   const up=upcoming(12).slice(0,8);
-  return`${S.mode==='demo'?`<div class="banner">You're viewing sample data on this device. Connect Supabase on the <b data-act="tab" data-arg="more" style="text-decoration:underline">More</b> tab to share with your team.</div>`:''}
+  return`${tempPw()?`<div class="banner" data-act="gopw">🔑 You're using a temporary password. <b style="text-decoration:underline">Set your own</b></div>`:''}${S.mode==='demo'?`<div class="banner">You're viewing sample data on this device. Connect Supabase on the <b data-act="tab" data-arg="more" style="text-decoration:underline">More</b> tab to share with your team.</div>`:''}
   <div class="stats">${stat(cnt(['active']),'Active products','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
   ${stat(cnt(['nrnd','ltb']),'Phasing out (NRND / LTB)','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
   <div class="sec"><h2>Lifecycle timeline</h2><span class="mut">${rows.length} products</span></div>
@@ -502,6 +503,14 @@ function viewMore(){
   <div class="card"><div class="chips wrap">${S.data.markets.map(m=>`<button class="chip" data-act="edit" data-arg="markets" data-id="${m.id}">${esc(m.name)}${m.status==='considering'?' <span class="mut">· considering</span>':''}</button>`).join('')}</div></div>
   <div class="sec"><h2>Supplier notices & events</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="events">+ Add</button>':''}</div>
   ${ev.length?`<div class="card">${ev.map(e=>`<div class="ev" data-act="edit" data-arg="events" data-id="${e.id}"><div class="dt">${fmtMY(e.event_date)}</div><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc((EVK.find(k=>k[0]===e.kind)||[])[1]||'')}${e.product_id?' · '+esc(pnOf(e.product_id)):''}</div></div></div>`).join('')}</div>`:'<div class="card empty">No events yet.</div>'}
+  ${S.mode==='live'?`<div class="sec" id="account"><h2>Your account</h2></div>
+  <div class="card">${tempPw()?`<div class="banner" style="margin:0 0 12px">You're still using the password you were given. Set your own below.</div>`:''}
+    <form id="pw" autocomplete="on"><input type="email" name="username" value="${esc(S.user?.email)}" autocomplete="username" hidden>
+      <div class="field"><label class="l">New password</label><input name="p1" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="field"><label class="l">Confirm new password</label><input name="p2" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="mut" style="font-size:12px;margin:-4px 0 6px">At least 8 characters. No email needed. Takes effect immediately.</div>
+      <div id="pwerr" style="color:var(--bad);font-size:13px"></div>
+      <button class="btn pri block">Change password</button></form></div>`:''}
   <div class="sec"><h2>Data & connection</h2></div>
   <div class="card">${S.mode==='live'?`<div class="mut">Connected to</div><b class="ell" style="display:block">${esc(c.url.replace(/^https?:\/\//,''))}</b><div class="mut" style="margin-top:8px">Signed in as <b>${esc(S.user?.email)}</b> · ${esc(S.role)}</div>
     <div class="btns"><button class="btn sm" data-act="export">Export JSON</button><button class="btn sm" data-act="signout">Sign out</button>${c.hard?'':'<button class="btn sm danger" data-act="disconnect">Disconnect device</button>'}</div>`
@@ -627,6 +636,7 @@ const A={
  export(){const b=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`roadmap-export-${iso(today)}.json`;document.body.appendChild(a);a.click();a.remove()},
  resetdemo(){if(confirm('Reset the sample data on this device?')){localStorage.removeItem(Demo.key);location.reload()}},
  async signout(){await S.sb.auth.signOut();location.reload()},
+ gopw(){S.tab='more';S.stack=[];renderAll();setTimeout(()=>{$('#account')?.scrollIntoView({behavior:'smooth'});$('#pw [name=p1]')?.focus()},50)},
  disconnect(){if(confirm('Disconnect this device from Supabase?')){localStorage.removeItem('rm_cfg');S.sb?.auth.signOut();location.reload()}}
 };
 document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t)return;e.stopPropagation();A[t.dataset.act]?.(t.dataset.id,t.dataset.arg,t,e)});
@@ -639,6 +649,19 @@ document.addEventListener('input',e=>{if(e.target.id==='q'){S.pf.q=e.target.valu
 document.addEventListener('submit',async e=>{
   const f=e.target;e.preventDefault();
   if(f.id==='conn'){const fd=new FormData(f);localStorage.setItem('rm_cfg',JSON.stringify({url:fd.get('url').trim().replace(/\/$/,''),key:fd.get('key').trim()}));location.reload();return}
+  if(f.id==='pw'){
+    const fd=new FormData(f),p1=fd.get('p1'),p2=fd.get('p2'),err=$('#pwerr'),btn=f.querySelector('button');
+    if(p1!==p2){err.textContent='The two passwords don\'t match.';return}
+    btn.disabled=true;btn.textContent='Saving…';err.textContent='';
+    const{data,error}=await S.sb.auth.updateUser({password:p1,data:{pw_set:true}});
+    btn.disabled=false;btn.textContent='Change password';
+    if(error){
+      let m=error.message||String(error);
+      if(/reauth/i.test(m))m='Supabase is set to require email re-confirmation for password changes. Ask your admin to turn off "Secure password change" in Supabase (Authentication → Email).';
+      else if(/different from the old/i.test(m))m='Choose a password different from your current one.';
+      err.textContent=m;return}
+    if(data?.user)S.user=data.user;
+    f.reset();toast('Password changed');renderMain();return}
   if(f.id==='login'){const fd=new FormData(f),btn=f.querySelector('button');btn.disabled=true;btn.textContent='Signing in…';
     const{data,error}=await S.sb.auth.signInWithPassword({email:fd.get('email').trim(),password:fd.get('password')});
     if(error){btn.disabled=false;btn.textContent='Sign in';$('#lerr').textContent=error.message;return}
@@ -667,6 +690,7 @@ function renderLogin(){
   $('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 4px">Product Roadmap</h2><p class="mut" style="margin-top:0">Sign in with your team account.</p>
   <form id="login"><div class="field"><label class="l">Email</label><input name="email" type="email" autocomplete="username" required></div><div class="field"><label class="l">Password</label><input name="password" type="password" autocomplete="current-password" required></div>
   <div id="lerr" style="color:var(--bad);font-size:13px"></div><button class="btn pri block">Sign in</button></form>
+  <p class="mut" style="font-size:12.5px;margin:12px 0 0">Forgot your password? Ask your roadmap admin to reset it. Once signed in, you can change it under More → Your account.</p>
   ${cfg().hard?'':'<button class="btn ghost" style="margin-top:8px" data-act="disconnect">Use a different project</button>'}</div></div>`;
 }
 function renderMsg(title,msg){$('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 6px">${esc(title)}</h2><p class="mut">${esc(msg)}</p><div class="btns"><button class="btn" onclick="location.reload()">Retry</button>${S.sb?'<button class="btn" data-act="signout">Sign out</button>':''}${cfg().hard?'':'<button class="btn danger" data-act="disconnect">Disconnect</button>'}</div></div></div>`}
