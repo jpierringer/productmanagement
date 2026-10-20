@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Roadmap">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Product Roadmap</title>
+<title>Product Portfolio Roadmap</title>
 <meta name="theme-color" content="#1d4ed8">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -130,6 +130,7 @@ label.l{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bot
 .tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;background:var(--chip);color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
 .ev{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .ev:first-child{border-top:0}
+.ev .grow{flex:1;min-width:0}
 .ev .dt{width:58px;flex:none;font-size:12px;color:var(--mut);text-align:right;padding-top:1px}
 .mig{display:flex;align-items:center;gap:8px;margin-top:8px}
 .mig select{padding:7px 30px 7px 10px;font-size:14px;width:auto;flex:1}
@@ -158,6 +159,19 @@ a{color:var(--acc)}
 .tl{touch-action:pan-x pan-y}
 .tl-q.qs{color:var(--ink);font-weight:600}
 .ztip{margin-left:auto;font-style:italic}
+.hov{position:fixed;z-index:35;width:320px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(2,6,23,.22);padding:12px 14px;font-size:13px;pointer-events:none;animation:fade .12s}
+.hov.touch{pointer-events:auto}
+.hov h4{margin:0;font-size:15px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.hov .hs{color:var(--mut);font-size:12px;margin:2px 0 8px}
+.hov .hl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:10px 0 4px}
+.hov .tr{background:var(--chip);border-radius:10px;padding:8px 10px;margin-top:6px}
+.hov .tr b{font-size:14px}
+.hov .hx{display:flex;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
+.hov .hx:first-of-type{border-top:0}
+.hov .hx .dt{width:52px;flex:none;color:var(--mut);font-size:12px}
+.hov .warn{color:var(--bad);font-weight:600}
+.hov .ft{color:var(--mut);font-size:11.5px;margin-top:8px}
+.tl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 /* desktop & landscape */
 @media (min-width:900px), (orientation:landscape) and (min-width:700px){
   body{padding-left:84px}
@@ -488,7 +502,7 @@ function filterBody(){
 function splitView(results,extraTop=''){
   return`${extraTop}<div class="split"><aside class="side">${filterBar()}</aside><section class="mainc" id="results">${results()}</section></div>`;
 }
-function refreshResults(){
+function refreshResults(){hovHide();
   saveTl();
   const fb=$('#fbody');if(fb)fb.innerHTML=filterBody();
   const tg=$('.ftoggle');if(tg){const n=FGROUPS.reduce((a,g)=>a+S.F[g.k].length,0);tg.textContent='Filters'+(n?` · ${n}`:'');tg.classList.toggle('has',!!n)}
@@ -577,14 +591,14 @@ function tlRow(p,X,W,grid){
   pts.sort((a,b)=>a[0]-b[0]);
   let bars='';
   if(!pts.length){const c=LC[ph]?.c||'#999',tx=X(today);
-    bars=`<div class="bar" style="left:0;width:${W}px;background:${c};opacity:.22" title="No lifecycle dates entered — showing current status (${LC[ph]?.l||''})"></div>`
+    bars=`<div class="bar" style="left:0;width:${W}px;background:${c};opacity:.22"></div>`
       +`<div class="nodates" style="left:${tx+8}px;color:${c}">no dates · ${esc(LC[ph]?.l||'')}</div>`}
   for(let i=0;i<pts.length;i++){const[dt,k]=pts[i];if(k==='end')break;const x0=X(dt),x1=pts[i+1]?X(pts[i+1][0]):W;if(x1-x0<1)continue;const c=LC[k]?.c||'#999',plan=k==='evaluating'||k==='onboarding';
     bars+=`<div class="bar" style="left:${x0}px;width:${x1-x0}px;${plan?`background:repeating-linear-gradient(135deg,${c}66 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1.5px ${c}`:`background:${c}`}"></div>`}
-  if(ld)bars+=`<div class="mk" style="left:${X(ld)}px;background:#ea580c" title="LTB ${fmt(p.ltb_date)}"></div>`;
-  if(ed)bars+=`<div class="mk" style="left:${X(ed)}px;background:#dc2626" title="EOL ${fmt(p.eol_date)}"></div>`;
+  if(ld)bars+=`<div class="mk" style="left:${X(ld)}px;background:#ea580c"></div>`;
+  if(ed)bars+=`<div class="mk" style="left:${X(ed)}px;background:#dc2626"></div>`;
   S.data.events.filter(e=>e.product_id===p.id&&e.event_date).forEach(e=>{
-    bars+=`<div class="evm" style="left:${X(d(e.event_date))}px;--c:${EVC[e.kind]||'#2563eb'}" data-act="edit" data-arg="events" data-id="${e.id}" title="${esc(fmt(e.event_date)+' · '+e.title)}"></div>`});
+    bars+=`<div class="evm" style="left:${X(d(e.event_date))}px;--c:${EVC[e.kind]||'#2563eb'}" data-act="edit" data-arg="events" data-id="${e.id}"></div>`});
   const tr=S.data.transitions.filter(t=>t.from_product_id===p.id);
   if(tr.length){const anchor=ed||ld||nd;if(anchor){const x=Math.min(X(anchor)+12,W-90);bars+=tr.slice(0,1).map(t=>`<div class="tl-next" style="left:${x}px" data-act="transition" data-id="${t.id}">→ ${esc(pnOf(t.to_product_id))}${tr.length>1?' +'+(tr.length-1):''}</div>`).join('')}}
   return`<div class="tl-row" data-act="product" data-id="${p.id}"><div class="tl-lab"><b><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:7px;height:7px;margin-right:5px;vertical-align:1px"></i>${esc(p.part_number)}</b><span>${esc(p.name)}</span></div><div class="tl-track" style="width:${W}px;${grid}">${bars}</div></div>`;
@@ -596,7 +610,7 @@ function restoreTl(){
   else tl.scrollLeft=Math.max(0,S.tlToday-(tl.clientWidth-LW)*0.3);
 }
 /* zoom, keeping the date under `clientX` fixed on screen */
-function setZoom(mw,clientX){
+function setZoom(mw,clientX){hovHide();
   const tl=$('.tl');mw=Math.max(ZMIN,Math.min(ZMAX,mw));
   if(!tl){S.mw=mw;return}
   const r=tl.getBoundingClientRect(),cx=clientX??(r.left+LW+(r.width-LW)/2);
@@ -672,7 +686,7 @@ function viewMore(){
 }
 
 /* ---------- sheets ---------- */
-function push(e){S.stack.push(e);renderSheet()}
+function push(e){hovHide();S.stack.push(e);renderSheet()}
 function renderSheet(){
   const el=$('#sheet');
   if(!S.stack.length){el.innerHTML='';document.body.classList.remove('noscroll');S.sheetOpen=false;return}
@@ -804,6 +818,84 @@ document.addEventListener('change',async e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.F.q=e.target.value;clearTimeout(refreshResults.t);refreshResults.t=setTimeout(refreshResults,120)}});
 
+/* ---------- timeline quick-look card (hover on desktop, long-press on phone) ---------- */
+function upcomingFor(p,n){
+  const out=[];
+  [['supplier_release_date','Supplier release'],['sample_date','Samples'],['onboard_date','Onboarding'],['nrnd_date','NRND'],['ltb_date','Last-time buy'],['last_ship_date','Last ship'],['eol_date','End of life'],['end_of_support_date','End of support']]
+    .forEach(([k,l])=>{if(p[k]&&d(p[k])>=today)out.push({date:p[k],l,kind:'date'})});
+  S.data.events.forEach(e=>{if(e.product_id===p.id&&e.event_date&&d(e.event_date)>=today)out.push({date:e.event_date,l:e.title,kind:e.kind})});
+  return out.sort((a,b)=>a.date.localeCompare(b.date)).slice(0,n);
+}
+function hovCard(p,ev,touch){
+  const ph=phase(p),s=sup(p),out=S.data.transitions.filter(t=>t.from_product_id===p.id),inn=S.data.transitions.filter(t=>t.to_product_id===p.id);
+  let h=`<h4><span>${esc(p.part_number)}</span>${badge(ph)}</h4><div class="hs"><i class="dot" style="background:${esc(s?.color||'#999')};width:7px;height:7px"></i> ${esc(s?.name||'')} · ${esc(p.sub_type||CATS1[p.category]||'')}</div>`;
+  if(ev)h+=`<div class="tr" style="border-left:3px solid ${EVC[ev.kind]||'#2563eb'}"><div class="mut" style="font-size:11.5px">${esc((EVK.find(k=>k[0]===ev.kind)||[])[1]||'Event')} · ${fmt(ev.event_date)} · ${relTxt(ev.event_date)}</div><b>${esc(ev.title)}</b>${ev.details?`<div class="mut" style="margin-top:3px">${esc(ev.details)}</div>`:''}</div>`;
+  if(['nrnd','ltb','eol'].includes(ph)){
+    const dates=[['nrnd_date','NRND'],['ltb_date','Last-time buy'],['last_ship_date','Last ship'],['eol_date','End of life']].filter(([k])=>p[k]);
+    if(dates.length)h+=`<div class="hl">Key dates</div>`+dates.map(([k,l])=>`<div class="hx"><div class="dt">${fmtMY(p[k])}</div><div>${l} <span class="mut">· ${relTxt(p[k])}</span></div></div>`).join('');
+    h+=`<div class="hl">Transition${out.length>1?'s':''}</div>`;
+    if(!out.length)h+=`<div class="warn">⚠ No successor mapped</div>`;
+    out.forEach(t=>{const b=byId('products',t.to_product_id);if(!b)return;const cps=cpsFor(t),done=cps.filter(c=>['released','complete'].includes(c.transition_status)).length,risk=cps.filter(c=>c.transition_status==='at_risk').length;
+      h+=`<div class="tr"><div>→ <b>${esc(b.part_number)}</b> ${badge(phase(b))}</div>
+        <div class="chips wrap" style="margin-top:6px">${impPill('SW',t.software_impact)}${impPill('Harness',t.harness_impact)}${impPill('Mech',t.mechanical_impact)}</div>
+        ${t.capability_gaps?`<div class="mut" style="margin-top:6px">${esc(t.capability_gaps.length>140?t.capability_gaps.slice(0,140)+'…':t.capability_gaps)}</div>`:''}
+        <div class="mut" style="margin-top:6px">${cps.length?`${done}/${cps.length} customers moved${risk?` · <span class="warn">${risk} at risk</span>`:''}`:'No customers linked'}</div></div>`});
+  }else{
+    const up=upcomingFor(p,3);
+    h+=`<div class="hl">Coming up</div>`+(up.length?up.map(u=>`<div class="hx"><div class="dt">${fmtMY(u.date)}</div><div>${esc(u.l)} <span class="mut">· ${relTxt(u.date)}</span></div></div>`).join(''):`<div class="mut">No upcoming dates or events.</div>`);
+    if(inn.length)h+=`<div class="hl">Replaces</div><div>${inn.map(t=>esc(pnOf(t.from_product_id))).join(', ')}</div>`;
+  }
+  h+=touch?`<button class="btn pri block" data-act="product" data-id="${p.id}" style="margin-top:12px">Open details</button>`:`<div class="ft">Click for details</div>`;
+  return h;
+}
+const HOV={el:null,key:null,timer:0,touch:false};
+function hovShow(row,evEl,x,y,touch){
+  const p=byId('products',row.dataset.id);if(!p)return;
+  const ev=evEl?byId('events',evEl.dataset.id):null,key=p.id+'|'+(ev?.id||'')+'|'+touch;
+  if(!HOV.el){HOV.el=document.createElement('div');document.body.appendChild(HOV.el)}
+  if(HOV.key!==key){HOV.el.className='hov'+(touch?' touch':'');HOV.el.innerHTML=hovCard(p,ev,touch);HOV.key=key}
+  HOV.el.style.display='block';HOV.touch=touch;hovMove(x,y);
+}
+function hovMove(x,y){
+  const el=HOV.el;if(!el||el.style.display==='none')return;
+  const w=el.offsetWidth,h=el.offsetHeight,vv=window.visualViewport,vw=vv?vv.width:document.documentElement.clientWidth,vh=vv?vv.height:innerHeight,pad=12;
+  let left=HOV.touch?(vw-w)/2:x+18,top=HOV.touch?y-h-24:y+18;
+  if(!HOV.touch){if(left+w>vw-pad)left=x-w-18;if(top+h>vh-pad)top=y-h-18}
+  else if(top<pad)top=Math.min(y+28,vh-h-pad);
+  el.style.left=Math.max(pad,Math.min(left,vw-w-pad))+'px';el.style.top=Math.max(pad,top)+'px';
+}
+function hovHide(){clearTimeout(HOV.timer);if(HOV.el)HOV.el.style.display='none';HOV.key=null}
+// desktop: hover
+document.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='mouse')return;
+  const row=e.target.closest&&e.target.closest('.tl-row');
+  if(!row||S.stack.length){if(!HOV.touch)hovHide();return}
+  const evEl=e.target.closest('.evm'),key=row.dataset.id+'|'+(evEl?.dataset.id||'')+'|false';
+  if(HOV.el&&HOV.el.style.display==='block'&&HOV.key===key)return hovMove(e.clientX,e.clientY);
+  clearTimeout(HOV.timer);const x=e.clientX,y=e.clientY;
+  if(HOV.el&&HOV.el.style.display==='block')hovShow(row,evEl,x,y,false);   // already showing: switch instantly
+  else HOV.timer=setTimeout(()=>hovShow(row,evEl,x,y,false),220);
+});
+document.documentElement.addEventListener('mouseleave',()=>{if(!HOV.touch)hovHide()});
+document.addEventListener('scroll',()=>{if(!HOV.touch)hovHide()},true);
+// phone: long-press (~0.45 s, finger held still)
+(function(){
+  let t=0,sx=0,sy=0,fired=0;
+  document.addEventListener('touchstart',e=>{
+    if(HOV.touch&&HOV.el&&!HOV.el.contains(e.target))hovHide(),HOV.touch=false;
+    if(e.touches.length!==1)return clearTimeout(t);
+    const row=e.target.closest&&e.target.closest('.tl-row');if(!row)return;
+    const evEl=e.target.closest('.evm');sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+    clearTimeout(t);t=setTimeout(()=>{fired=Date.now();navigator.vibrate?.(10);hovShow(row,evEl,sx,sy,true)},450);
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{if(Math.hypot(e.touches[0].clientX-sx,e.touches[0].clientY-sy)>10)clearTimeout(t)},{passive:true});
+  document.addEventListener('touchend',()=>clearTimeout(t));
+  document.addEventListener('touchcancel',()=>clearTimeout(t));
+  // the finger lifting after a long-press must not also "tap" the row
+  document.addEventListener('click',e=>{if(Date.now()-fired<700&&e.target.closest('.tl')){e.stopPropagation();e.preventDefault()}},true);
+  document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.tl'))e.preventDefault()});
+})();
+
 /* ---------- zoom gestures ---------- */
 const inTl=t=>t&&t.closest&&t.closest('.tl');
 // iPhone / Android: two-finger pinch on the timeline
@@ -877,7 +969,7 @@ async function renameMarket(from,to){
 
 /* ---------- boot ---------- */
 function renderLogin(){
-  $('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 4px">Product Roadmap</h2><p class="mut" style="margin-top:0">Sign in with your team account.</p>
+  $('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 4px">Product Portfolio Roadmap</h2><p class="mut" style="margin-top:0">Sign in with your team account.</p>
   <form id="login"><div class="field"><label class="l">Email</label><input name="email" type="email" autocomplete="username" required></div><div class="field"><label class="l">Password</label><input name="password" type="password" autocomplete="current-password" required></div>
   <div id="lerr" style="color:var(--bad);font-size:13px"></div><button class="btn pri block">Sign in</button></form>
   <p class="mut" style="font-size:12.5px;margin:12px 0 0">Forgot your password? Ask your roadmap admin to reset it. Once signed in, you can change it under More → Your account.</p>
