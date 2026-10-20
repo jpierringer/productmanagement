@@ -136,6 +136,62 @@ label.l{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bot
 .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .center .card{width:100%;max-width:380px}
 a{color:var(--acc)}
+/* filters, toolbar, zoom */
+.fbar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.fbar input{flex:1;min-width:0}
+.ftoggle{flex:none;white-space:nowrap;padding:11px 14px}
+.ftoggle.has{background:var(--ink);color:var(--bg)}
+.fbody{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 12px 10px;margin-bottom:12px;box-shadow:var(--shadow)}
+.fbody.open{display:block}
+.fsum{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut);min-height:34px}
+.fsec{padding:6px 0 8px;border-top:1px solid var(--line)}
+.fsh{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);min-height:28px;margin-bottom:2px}
+.fsh .btn{text-transform:none;letter-spacing:0;font-size:12.5px;padding:4px 2px}
+.fchip{padding:5px 10px;font-size:12.5px}
+.fchip .cnt{font-size:11px;opacity:.55;margin-left:1px}
+.fchip.zero{opacity:.42}
+.tlbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:16px 0 8px}
+.tlbar .segc{flex:1;min-width:230px;margin:0}
+.zoom{display:flex;align-items:center;gap:4px}
+.zoom .btn{min-width:38px}
+.zl{font-size:12px;min-width:62px;text-align:center}
+.tl{touch-action:pan-x pan-y}
+.tl-q.qs{color:var(--ink);font-weight:600}
+.ztip{margin-left:auto;font-style:italic}
+/* desktop & landscape */
+@media (min-width:900px), (orientation:landscape) and (min-width:700px){
+  body{padding-left:84px}
+  nav.tabs{top:0;bottom:0;right:auto;width:84px;flex-direction:column;justify-content:flex-start;gap:2px;padding:calc(env(safe-area-inset-top) + 14px) 0 0;border-top:0;border-right:1px solid var(--line)}
+  nav.tabs button{flex:none;padding:11px 0;font-size:11px}
+  header.top{padding:calc(env(safe-area-inset-top) + 12px) 24px 12px}
+  main{max-width:none;padding:0 24px 32px}
+  .fab{bottom:24px;right:28px}
+  .toast{bottom:24px}
+  .split{display:grid;grid-template-columns:280px minmax(0,1fr);gap:22px;align-items:start}
+  .side{position:sticky;top:62px;max-height:calc(100vh - 74px);overflow-y:auto;padding-bottom:16px;scrollbar-width:thin}
+  .ftoggle{display:none}
+  .fbody{display:block}
+  .stats{grid-template-columns:repeat(4,1fr);margin-top:0}
+  .stat b{font-size:24px}
+  .tlbar{margin-top:12px}
+  .tl{max-height:calc(100vh - 230px);min-height:320px}
+  .tl-lab b{font-size:13px}.tl-lab span{font-size:11.5px}
+  .glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px;align-items:start}
+  .glist>.li,.glist>.card{margin:0}
+  .narrow{max-width:900px}
+  .sheet{left:auto;right:0;top:0;width:min(620px,100vw);max-width:none;border-radius:0;box-shadow:-10px 0 34px rgba(2,6,23,.18)}
+  .sheet.anim{animation:slide .24s ease-out}
+}
+@media (min-width:700px) and (max-width:1099px) and (orientation:landscape), (min-width:900px) and (max-width:1099px){
+  .split{grid-template-columns:232px minmax(0,1fr);gap:14px}
+  main{padding:0 16px 24px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .stats{display:none}
+  .tl{max-height:calc(100vh - 120px);min-height:220px}
+  .side{top:56px;max-height:calc(100vh - 64px)}
+}
+@keyframes slide{from{transform:translateX(100%)}}
 </style>
 </head>
 <body>
@@ -169,11 +225,18 @@ const EVK=[['announcement','Supplier announcement'],['pcn','PCN / change notice'
 const EVC={milestone:'#2563eb',announcement:'#0ea5e9',pcn:'#8b5cf6',release:'#16a34a',nrnd:'#d97706',ltb:'#ea580c',eol:'#dc2626',note:'#64748b'};
 const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers'];
 const OPTIONAL=['part_numbers']; // added in schema upgrade v2 — app still loads if it hasn't been run
-const LW=118, MW=24;
+const WIDEQ='(min-width:900px), (orientation:landscape) and (min-width:700px)';
+const wide=()=>matchMedia(WIDEQ).matches;
+let LW=118;                       // label column width (wider on desktop)
+const ZMIN=5,ZMAX=120;            // px per month
+const PHG=[['pipeline','Evaluating / onboarding'],['active','Active'],['phasing','Phasing out'],['eol','End of life'],['rejected','Not onboarded']];
+const PHG_OF={evaluating:'pipeline',onboarding:'pipeline',active:'active',nrnd:'phasing',ltb:'phasing',eol:'eol',rejected:'rejected'};
 
 /* ---------- state ---------- */
 const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
-  f:{group:'category',hide:new Set(),showEol:true},pf:{q:'',phase:'all',cat:'all'},tlScroll:null};
+  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[]};
+try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw}}catch(e){}
+function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw}))}catch(e){}}
 TABLES.forEach(t=>S.data[t]=[]);
 
 /* ---------- helpers ---------- */
@@ -375,6 +438,7 @@ const TITLES={roadmap:'Roadmap',products:'Products',transitions:'Transitions',cu
 const fab=(table,def)=>canEdit()?`<button class="fab" data-act="new" data-arg="${table}" ${def?`data-def="${esc(JSON.stringify(def))}"`:''} aria-label="Add">+</button>`:'';
 
 function renderAll(){
+  LW=!wide()?118:innerWidth>=1100?200:140;document.body.classList.toggle('wide',wide());
   $('#app').innerHTML=`<header class="top"><h1>${TITLES[S.tab]}</h1>${S.mode==='demo'?'<span class="tag">Demo</span>':''}
     ${S.mode==='live'?'<button class="btn ghost" data-act="refresh" aria-label="Refresh">↻ Sync</button>':''}</header>
     <main id="main"></main>
@@ -382,35 +446,84 @@ function renderAll(){
   renderMain();renderSheet();
 }
 function renderMain(){
-  const old=$('.tl');if(old)S.tlScroll=[old.scrollLeft,old.scrollTop];
+  saveTl();
   const m=$('#main');if(!m)return;
   m.innerHTML=({roadmap:viewRoadmap,products:viewProducts,transitions:viewTransitions,customers:viewCustomers,more:viewMore})[S.tab]();
-  const tl=$('.tl');if(tl){if(S.tlScroll){tl.scrollLeft=S.tlScroll[0];tl.scrollTop=S.tlScroll[1]}else tl.scrollLeft=Math.max(0,+tl.dataset.today-90)}
+  restoreTl();
 }
 
-/* Roadmap tab */
+/* ---------- shared filters (Roadmap + Products) ---------- */
+const FGROUPS=[
+  {k:'sup',l:'Supplier',opts:()=>S.data.suppliers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(s=>[s.id,s.name,s.color]),val:p=>[p.supplier_id]},
+  {k:'cat',l:'Category',opts:()=>CATEGORIES.filter(([k])=>S.data.products.some(p=>p.category===k)),val:p=>[p.category]},
+  {k:'ph',l:'Status',opts:()=>PHG,val:p=>[PHG_OF[phase(p)]]},
+  {k:'mkt',l:'Market',opts:()=>S.data.markets.map(m=>[m.name,m.name+(m.status==='considering'?' (considering)':'')]),val:p=>p.markets||[]},
+  {k:'can',l:'CAN protocol',opts:()=>canOpts(),val:p=>p.can_protocols||[]}];
+let _pnHit=null,_pnQ=null;
+function qHit(p){
+  const q=S.F.q.trim().toLowerCase();if(!q)return true;
+  if(_pnQ!==q){_pnQ=q;_pnHit=new Set(S.data.part_numbers.filter(x=>String(x.part_number).toLowerCase().includes(q)).map(x=>x.product_id))}
+  return _pnHit.has(p.id)||[p.part_number,p.name,p.family,p.sub_type,p.product_code,(p.can_protocols||[]).join(' '),(p.markets||[]).join(' '),p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q);
+}
+function passes(p,except){
+  if(!qHit(p))return false;
+  return FGROUPS.every(g=>g.k===except||!S.F[g.k].length||g.val(p).some(v=>S.F[g.k].includes(v)));
+}
+const filtered=()=>S.data.products.filter(p=>passes(p));
+const activeCount=()=>FGROUPS.reduce((n,g)=>n+S.F[g.k].length,0)+(S.F.q.trim()?1:0);
+function filterBar(){
+  const n=FGROUPS.reduce((a,g)=>a+S.F[g.k].length,0);
+  return`<div class="fbar"><input id="q" type="search" placeholder="Search model, part number, family, protocol…" value="${esc(S.F.q)}" autocomplete="off">
+    <button class="btn sm ftoggle ${n?'has':''}" data-act="ftoggle" aria-expanded="${S.fOpen}">Filters${n?` · ${n}`:''}</button></div>
+    <div id="fbody" class="fbody ${S.fOpen?'open':''}">${filterBody()}</div>`;
+}
+function filterBody(){
+  const total=S.data.products.length,shown=filtered().length;
+  return`<div class="fsum"><span>${shown===total?`All ${total} products`:`<b>${shown}</b> of ${total} products`}</span>${activeCount()?'<button class="btn ghost sm" data-act="fclrall">Clear all</button>':''}</div>`+
+  FGROUPS.map(g=>{const opts=g.opts();if(!opts.length)return'';const sel=S.F[g.k];
+    return`<div class="fsec"><div class="fsh">${g.l}${sel.length?`<button class="btn ghost sm" data-act="fclr" data-arg="${g.k}">Show all</button>`:''}</div><div class="chips wrap">`+
+    opts.map(([v,l,color])=>{const on=sel.includes(v),c=S.data.products.filter(p=>passes(p,g.k)&&g.val(p).includes(v)).length;
+      return`<button class="chip fchip ${on?'on':''} ${!c&&!on?'zero':''}" data-act="fx" data-arg="${g.k}" data-id="${esc(v)}">${color?`<i class="dot" style="background:${esc(color)};width:8px;height:8px"></i>`:''}${esc(l)}<span class="cnt">${c}</span></button>`}).join('')+`</div></div>`}).join('');
+}
+function splitView(results,extraTop=''){
+  return`${extraTop}<div class="split"><aside class="side">${filterBar()}</aside><section class="mainc" id="results">${results()}</section></div>`;
+}
+function refreshResults(){
+  saveTl();
+  const fb=$('#fbody');if(fb)fb.innerHTML=filterBody();
+  const tg=$('.ftoggle');if(tg){const n=FGROUPS.reduce((a,g)=>a+S.F[g.k].length,0);tg.textContent='Filters'+(n?` · ${n}`:'');tg.classList.toggle('has',!!n)}
+  const r=$('#results');if(r)r.innerHTML=(S.tab==='roadmap'?roadmapResults:productResults)();
+  restoreTl();saveView();
+}
+
+/* ---------- Roadmap tab ---------- */
 function stat(n,l,c,arg){return`<div class="stat" style="--c:${c}" data-act="statgo" data-arg="${arg}"><b>${n}</b><span>${l}</span></div>`}
 function viewRoadmap(){
-  const ps=S.data.products,cnt=ks=>ps.filter(p=>ks.includes(phase(p))).length;
-  const mig=S.data.customer_products.filter(needsMig).length;
-  const rows=ps.filter(p=>{const ph=phase(p);return ph!=='rejected'&&!S.f.hide.has(p.supplier_id)&&(S.f.showEol||ph!=='eol')});
-  const up=upcoming(12).slice(0,8);
-  return`${tempPw()?`<div class="banner" data-act="gopw">🔑 You're using a temporary password. <b style="text-decoration:underline">Set your own</b></div>`:''}${S.mode==='demo'?`<div class="banner">You're viewing sample data on this device. Connect Supabase on the <b data-act="tab" data-arg="more" style="text-decoration:underline">More</b> tab to share with your team.</div>`:''}
-  <div class="stats">${stat(cnt(['active']),'Active products','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
-  ${stat(cnt(['nrnd','ltb']),'Phasing out (NRND / LTB)','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
-  <div class="sec"><h2>Lifecycle timeline</h2><span class="mut">${rows.length} products</span></div>
-  <div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
-  <div class="chips" style="margin-bottom:10px">${S.data.suppliers.map(s=>`<button class="chip ${S.f.hide.has(s.id)?'':'on'}" data-act="sup" data-id="${s.id}"><i class="dot" style="background:${esc(s.color)}"></i>${esc(s.name)}</button>`).join('')}
-   <button class="chip ${S.f.showEol?'on':''}" data-act="eol">Include EOL</button></div>
-  ${rows.length?timeline(rows):'<div class="card empty">No products match these filters.</div>'}
-  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#16a34a;opacity:.22"></i>Faded = no dates yet (current status only)</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span><i style="background:var(--card);border:2.5px solid #2563eb;width:8px;height:8px;transform:rotate(45deg);border-radius:2px"></i>Event (tap)</span><span style="color:var(--acc);font-weight:600">→ successor</span></div>
+  const banners=`${tempPw()?`<div class="banner" data-act="gopw">🔑 You're using a temporary password. <b style="text-decoration:underline">Set your own</b></div>`:''}${S.mode==='demo'?`<div class="banner">You're viewing sample data on this device. Connect Supabase on the <b data-act="tab" data-arg="more" style="text-decoration:underline">More</b> tab to share with your team.</div>`:''}`;
+  return splitView(roadmapResults,banners);
+}
+function roadmapResults(){
+  const ps=filtered(),ids=new Set(ps.map(p=>p.id)),cnt=ks=>ps.filter(p=>ks.includes(phase(p))).length;
+  const mig=S.data.customer_products.filter(c=>ids.has(c.product_id)&&needsMig(c)).length;
+  S.rows=ps;
+  const up=upcoming(12,ids).slice(0,10);
+  const zl=S.mw>=36?'Months':S.mw>=9?'Quarters':'Years';
+  return`<div class="stats">${stat(cnt(['active']),'Active','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
+  ${stat(cnt(['nrnd','ltb']),'Phasing out','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
+  <div class="tlbar"><div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
+    <div class="zoom"><button class="btn sm" data-act="zoom" data-arg="out" aria-label="Zoom out">−</button><span class="mut zl">${zl}</span><button class="btn sm" data-act="zoom" data-arg="in" aria-label="Zoom in">+</button><button class="btn sm" data-act="zoom" data-arg="today">Today</button></div></div>
+  ${ps.length?timeline(ps):'<div class="card empty">No products match these filters.</div>'}
+  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#16a34a;opacity:.22"></i>Faded = no dates yet (current status only)</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span><i style="background:var(--card);border:2.5px solid #2563eb;width:8px;height:8px;transform:rotate(45deg);border-radius:2px"></i>Event (tap)</span><span style="color:var(--acc);font-weight:600">→ successor</span><span class="ztip">${'ontouchstart' in window?'Pinch to zoom':'Ctrl/⌘ + scroll to zoom'}</span></div>
   <div class="sec"><h2>Next 12 months</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="events">+ Event</button>`:''}</div>
   ${up.length?`<div class="card">${up.map(upItem).join('')}</div>`:'<div class="card empty">Nothing scheduled in the next 12 months.</div>'}`;
 }
-function upcoming(months){
+function upcoming(months,ids){
   const lim=new Date(today);lim.setMonth(lim.getMonth()+months);const out=[];
-  S.data.products.forEach(p=>{if(phase(p)==='rejected')return;[['nrnd_date','NRND','nrnd'],['ltb_date','Last-time buy','ltb'],['eol_date','End of life','eol'],['supplier_release_date','Supplier release','evaluating'],['onboard_date','Onboard','active']].forEach(([k,l,c])=>{const x=d(p[k]);if(x&&x>=today&&x<=lim)out.push({date:p[k],l,c,p})})});
-  S.data.events.forEach(e=>{const x=d(e.event_date);if(x&&x>=today&&x<=lim)out.push({date:e.event_date,l:e.title,e})});
+  const supOk=sid=>!S.F.sup.length||S.F.sup.includes(sid),otherF=activeCount()-S.F.sup.length;
+  S.data.products.forEach(p=>{if(ids&&!ids.has(p.id))return;if(phase(p)==='rejected')return;[['nrnd_date','NRND','nrnd'],['ltb_date','Last-time buy','ltb'],['eol_date','End of life','eol'],['supplier_release_date','Supplier release','evaluating'],['onboard_date','Onboard','active']].forEach(([k,l,c])=>{const x=d(p[k]);if(x&&x>=today&&x<=lim)out.push({date:p[k],l,c,p})})});
+  S.data.events.forEach(e=>{const x=d(e.event_date);if(!(x&&x>=today&&x<=lim))return;
+    if(ids&&(e.product_id?!ids.has(e.product_id):(otherF>0||!supOk(e.supplier_id))))return;
+    out.push({date:e.event_date,l:e.title,e})});
   return out.sort((a,b)=>a.date.localeCompare(b.date));
 }
 function upItem(u){
@@ -419,26 +532,43 @@ function upItem(u){
 }
 function groupKeys(p){
   if(S.f.group==='supplier')return[sup(p)?.name||'No supplier'];
-  if(S.f.group==='market')return(p.markets&&p.markets.length)?p.markets:['Unassigned'];
+  if(S.f.group==='market'){const m=(p.markets||[]).filter(x=>!S.F.mkt.length||S.F.mkt.includes(x));return m.length?m:['Unassigned']}
   return[(CATEGORIES.find(c=>c[0]===p.category)||[,'Other'])[1]];
 }
-function timeline(products){
-  const start=new Date(today.getFullYear()-2,0,1),endY=today.getFullYear()+3,months=(endY-start.getFullYear()+1)*12,W=months*MW;
-  const X=dt=>{const m=(dt.getFullYear()-start.getFullYear())*12+dt.getMonth()+(dt.getDate()-1)/new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();return Math.max(0,Math.min(W,m*MW))};
-  let head='';for(let m=0;m<months;m+=3){const dt=new Date(start.getFullYear(),m,1);if(dt.getMonth()===0)head+=`<div class="tl-y" style="left:${m*MW+4}px">${dt.getFullYear()}</div>`;head+=`<div class="tl-q" style="left:${m*MW+4}px">Q${dt.getMonth()/3+1}</div>`}
-  const tx=X(today);head+=`<div class="tl-now" style="left:${tx}px">Today</div>`;
+/* timeline geometry depends on the zoom (S.mw = px per month) */
+function tlRange(products){
+  let y0=today.getFullYear()-2,y1=today.getFullYear()+3;
+  const ds=[];products.forEach(p=>['supplier_release_date','onboard_date','nrnd_date','ltb_date','eol_date'].forEach(k=>p[k]&&ds.push(d(p[k]).getFullYear())));
+  const ids=new Set(products.map(p=>p.id));S.data.events.forEach(e=>{if(ids.has(e.product_id)&&e.event_date)ds.push(d(e.event_date).getFullYear())});
+  if(ds.length){y0=Math.max(today.getFullYear()-12,Math.min(y0,...ds));y1=Math.min(today.getFullYear()+12,Math.max(y1,...ds))}
+  return[y0,y1];
+}
+function timeline(products){return`<div class="tl" style="--lw:${LW}px">${timelineInner(products)}</div>`}
+function timelineInner(products){
+  const MW=S.mw,[y0,y1]=tlRange(products);S.tlY0=y0;const start=new Date(y0,0,1),months=(y1-y0+1)*12,W=months*MW;
+  const X=dt=>{const m=(dt.getFullYear()-y0)*12+dt.getMonth()+(dt.getDate()-1)/new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();return Math.max(0,Math.min(W,m*MW))};
+  const MN=['J','F','M','A','M','J','J','A','S','O','N','D'],MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let head='';
+  for(let m=0;m<months;m++){const mo=m%12,x=m*MW;
+    if(mo===0)head+=`<div class="tl-y" style="left:${x+4}px">${y0+m/12}</div>`;
+    if(MW>=36)head+=`<div class="tl-q${mo%3===0?' qs':''}" style="left:${x+4}px">${MW>=48?MS[mo]:MN[mo]}</div>`;
+    else if(MW>=9&&mo%3===0)head+=`<div class="tl-q" style="left:${x+4}px">Q${mo/3+1}</div>`;}
+  const tx=X(today);S.tlToday=tx;head+=`<div class="tl-now" style="left:${tx}px">Today</div>`;
   const groups=new Map();products.forEach(p=>groupKeys(p).forEach(k=>{if(!groups.has(k))groups.set(k,[]);groups.get(k).push(p)}));
   let keys=[...groups.keys()];
   if(S.f.group==='category'){const o=CATEGORIES.map(c=>c[1]);keys.sort((a,b)=>o.indexOf(a)-o.indexOf(b))}
   else if(S.f.group==='market'){const o=S.data.markets.map(m=>m.name);keys.sort((a,b)=>(o.indexOf(a)<0?99:o.indexOf(a))-(o.indexOf(b)<0?99:o.indexOf(b)))}
   else keys.sort();
   const firstDate=p=>p.supplier_release_date||p.onboard_date||'9999';
-  const grid=`background-image:repeating-linear-gradient(to right,color-mix(in srgb,var(--mut) 30%,transparent) 0 1px,transparent 1px ${MW*12}px),repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px ${MW*3}px)`;
+  const lines=[`repeating-linear-gradient(to right,color-mix(in srgb,var(--mut) 32%,transparent) 0 1px,transparent 1px ${MW*12}px)`];
+  if(MW>=9)lines.push(`repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px ${MW*3}px)`);
+  if(MW>=36)lines.push(`repeating-linear-gradient(to right,color-mix(in srgb,var(--line) 55%,transparent) 0 1px,transparent 1px ${MW}px)`);
+  const grid=`background-image:${lines.join(',')}`;
   let body='';
   keys.forEach(k=>{const L=groups.get(k).sort((a,b)=>firstDate(a).localeCompare(firstDate(b)));
     body+=`<div class="tl-grp"><div class="tl-glab">${esc(k)} · ${L.length}</div></div>`;
     L.forEach(p=>body+=tlRow(p,X,W,grid))});
-  return`<div class="tl" data-today="${tx}"><div class="tl-in" style="width:${LW+W}px"><div class="tl-head"><div class="tl-corner">Tap a row</div><div class="tl-years" style="width:${W}px">${head}</div></div>${body}<div class="tl-today" style="left:${LW+tx}px"></div></div></div>`;
+  return`<div class="tl-in" style="width:${LW+W}px"><div class="tl-head"><div class="tl-corner">${products.length} product${products.length===1?'':'s'}</div><div class="tl-years" style="width:${W}px">${head}</div></div>${body}<div class="tl-today" style="left:${LW+tx}px"></div></div>`;
 }
 function tlRow(p,X,W,grid){
   const ph=phase(p),pts=[],rd=d(p.supplier_release_date),od=d(p.onboard_date),nd=d(p.nrnd_date),ld=d(p.ltb_date),ed=d(p.eol_date);
@@ -459,20 +589,32 @@ function tlRow(p,X,W,grid){
   if(tr.length){const anchor=ed||ld||nd;if(anchor){const x=Math.min(X(anchor)+12,W-90);bars+=tr.slice(0,1).map(t=>`<div class="tl-next" style="left:${x}px" data-act="transition" data-id="${t.id}">→ ${esc(pnOf(t.to_product_id))}${tr.length>1?' +'+(tr.length-1):''}</div>`).join('')}}
   return`<div class="tl-row" data-act="product" data-id="${p.id}"><div class="tl-lab"><b><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:7px;height:7px;margin-right:5px;vertical-align:1px"></i>${esc(p.part_number)}</b><span>${esc(p.name)}</span></div><div class="tl-track" style="width:${W}px;${grid}">${bars}</div></div>`;
 }
-
-/* Products tab */
-const PHASEF={all:null,pipeline:['evaluating','onboarding'],active:['active'],phasing:['nrnd','ltb'],eol:['eol','rejected']};
-function viewProducts(){
-  return`<input id="q" type="search" placeholder="Search model, part number, family…" value="${esc(S.pf.q)}" autocomplete="off">
-  <div class="chips" style="margin:10px 0 6px">${[['all','All'],['pipeline','Evaluating'],['active','Active'],['phasing','Phasing out'],['eol','EOL / not onboarded']].map(([k,l])=>`<button class="chip ${S.pf.phase===k?'on':''}" data-act="phase" data-arg="${k}">${l}</button>`).join('')}</div>
-  <div class="chips" style="margin-bottom:12px">${[['all','All types'],...CATEGORIES].map(([k,l])=>`<button class="chip ${S.pf.cat===k?'on':''}" data-act="cat" data-arg="${k}">${l}</button>`).join('')}</div>
-  <div id="plist">${productList()}</div>${fab('products')}`;
+function saveTl(){const t=$('.tl');if(t)S.tlScroll=[S.tlY0*12+t.scrollLeft/S.mw,t.scrollTop]}
+function restoreTl(){
+  const tl=$('.tl');if(!tl)return;
+  if(S.tlScroll){tl.scrollLeft=(S.tlScroll[0]-S.tlY0*12)*S.mw;tl.scrollTop=S.tlScroll[1]}
+  else tl.scrollLeft=Math.max(0,S.tlToday-(tl.clientWidth-LW)*0.3);
 }
-function productList(){
-  const q=S.pf.q.trim().toLowerCase(),pf=PHASEF[S.pf.phase];
-  const pnHit=q?new Set(S.data.part_numbers.filter(x=>String(x.part_number).toLowerCase().includes(q)).map(x=>x.product_id)):null;
-  const L=S.data.products.filter(p=>(!pf||pf.includes(phase(p)))&&(S.pf.cat==='all'||p.category===S.pf.cat)&&(!q||pnHit.has(p.id)||[p.part_number,p.name,p.family,p.sub_type,p.product_code,(p.can_protocols||[]).join(' '),p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q))).sort((a,b)=>a.part_number.localeCompare(b.part_number));
-  return L.length?L.map(productItem).join(''):'<div class="empty">No products found.</div>';
+/* zoom, keeping the date under `clientX` fixed on screen */
+function setZoom(mw,clientX){
+  const tl=$('.tl');mw=Math.max(ZMIN,Math.min(ZMAX,mw));
+  if(!tl){S.mw=mw;return}
+  const r=tl.getBoundingClientRect(),cx=clientX??(r.left+LW+(r.width-LW)/2);
+  const xIn=Math.max(LW,cx-r.left),month=(tl.scrollLeft+xIn-LW)/S.mw;
+  if(Math.abs(mw-S.mw)<0.05)return;
+  S.mw=mw;const st=tl.scrollTop;
+  tl.innerHTML=timelineInner(S.rows);
+  tl.scrollLeft=month*S.mw-xIn+LW;tl.scrollTop=st;
+  const zl=$('.zl');if(zl)zl.textContent=S.mw>=36?'Months':S.mw>=9?'Quarters':'Years';
+  clearTimeout(setZoom.t);setZoom.t=setTimeout(saveView,300);
+}
+function zoomToday(){const tl=$('.tl');if(tl)tl.scrollTo({left:Math.max(0,S.tlToday-(tl.clientWidth-LW)*0.3),behavior:'smooth'})}
+
+/* ---------- Products tab ---------- */
+function viewProducts(){return splitView(productResults)+fab('products')}
+function productResults(){
+  const L=filtered().sort((a,b)=>a.part_number.localeCompare(b.part_number));
+  return`<div class="glist">${L.length?L.map(productItem).join(''):'<div class="empty">No products match these filters.</div>'}</div>`;
 }
 function productItem(p){
   const s=sup(p),nm=nextMilestone(p);
@@ -494,20 +636,20 @@ function viewTransitions(){
   const L=S.data.transitions.slice().sort((a,b)=>{const pa=byId('products',a.from_product_id),pb=byId('products',b.from_product_id);return(pa?.eol_date||pa?.ltb_date||'9999').localeCompare(pb?.eol_date||pb?.ltb_date||'9999')});
   const orphan=S.data.products.filter(p=>['nrnd','ltb','eol'].includes(phase(p))&&!S.data.transitions.some(t=>t.from_product_id===p.id));
   return`${orphan.length?`<div class="banner"><b>No successor defined:</b> ${orphan.map(p=>`<span data-act="product" data-id="${p.id}" style="text-decoration:underline">${esc(p.part_number)}</span>`).join(', ')}</div>`:''}
-  ${L.length?L.map(trCard).join(''):'<div class="card empty">No transitions yet. Add one to map an outgoing product to its successor.</div>'}${fab('transitions')}`;
+  ${L.length?`<div class="glist">${L.map(trCard).join('')}</div>`:'<div class="card empty">No transitions yet. Add one to map an outgoing product to its successor.</div>'}${fab('transitions')}`;
 }
 
 /* Customers tab */
 function viewCustomers(){
   const L=S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.name));
-  return(L.length?L.map(c=>{const cps=S.data.customer_products.filter(x=>x.customer_id===c.id),m=cps.filter(needsMig).length,r=cps.filter(x=>x.transition_status==='at_risk').length;
-    return`<div class="li" data-act="customer" data-id="${c.id}"><div class="grow"><div class="pn">${esc(c.name)}</div><div class="mut">${esc(c.market||'—')} · ${cps.length} product${cps.length===1?'':'s'}</div></div>${r?`<span class="pill" style="--c:#dc2626">${r} at risk</span>`:m?`<span class="pill" style="--c:#d97706">${m} migrating</span>`:`<span class="pill" style="--c:#16a34a">Current</span>`}</div>`}).join(''):'<div class="card empty">No customers yet.</div>')+fab('customers');
+  return(L.length?'<div class="glist">'+L.map(c=>{const cps=S.data.customer_products.filter(x=>x.customer_id===c.id),m=cps.filter(needsMig).length,r=cps.filter(x=>x.transition_status==='at_risk').length;
+    return`<div class="li" data-act="customer" data-id="${c.id}"><div class="grow"><div class="pn">${esc(c.name)}</div><div class="mut">${esc(c.market||'—')} · ${cps.length} product${cps.length===1?'':'s'}</div></div>${r?`<span class="pill" style="--c:#dc2626">${r} at risk</span>`:m?`<span class="pill" style="--c:#d97706">${m} migrating</span>`:`<span class="pill" style="--c:#16a34a">Current</span>`}</div>`}).join('')+'</div>':'<div class="card empty">No customers yet.</div>')+fab('customers');
 }
 
 /* More tab */
 function viewMore(){
   const c=cfg(),ev=S.data.events.slice().sort((a,b)=>b.event_date.localeCompare(a.event_date)).slice(0,12);
-  return`<div class="sec"><h2>Suppliers</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="suppliers">+ Add</button>':''}</div>
+  return`<div class="narrow"><div class="sec"><h2>Suppliers</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="suppliers">+ Add</button>':''}</div>
   ${S.data.suppliers.map(s=>{const n=S.data.products.filter(p=>p.supplier_id===s.id).length;return`<div class="li" data-act="edit" data-arg="suppliers" data-id="${s.id}"><i class="dot" style="background:${esc(s.color)}"></i><div class="grow"><div class="pn">${esc(s.name)}</div><div class="mut">${n} product${n===1?'':'s'}${s.roadmap_cadence?' · '+esc(s.roadmap_cadence):''}</div></div></div>`}).join('')}
   <div class="sec"><h2>Markets</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="markets">+ Add</button>':''}</div>
   <div class="card"><div class="chips wrap">${S.data.markets.map(m=>`<button class="chip" data-act="edit" data-arg="markets" data-id="${m.id}">${esc(m.name)}${m.status==='considering'?' <span class="mut">· considering</span>':''}</button>`).join('')}</div></div>
@@ -526,7 +668,7 @@ function viewMore(){
     <div class="btns"><button class="btn sm" data-act="export">Export JSON</button><button class="btn sm" data-act="signout">Sign out</button>${c.hard?'':'<button class="btn sm danger" data-act="disconnect">Disconnect device</button>'}</div>`
    :`<p class="mut" style="margin-top:0">Demo mode — data lives only on this device. Enter your Supabase project details to share with your team.</p>
     <form id="conn"><div class="field"><label class="l">Project URL</label><input name="url" placeholder="https://xxxx.supabase.co" required></div><div class="field"><label class="l">Anon public key</label><input name="key" required></div><button class="btn pri block">Connect</button></form>
-    <div class="btns"><button class="btn sm" data-act="export">Export JSON</button><button class="btn sm danger" data-act="resetdemo">Reset sample data</button></div>`}</div>`;
+    <div class="btns"><button class="btn sm" data-act="export">Export JSON</button><button class="btn sm danger" data-act="resetdemo">Reset sample data</button></div>`}</div></div>`;
 }
 
 /* ---------- sheets ---------- */
@@ -640,11 +782,13 @@ const A={
  new:(id,arg,el)=>push({type:'form',table:arg,defaults:el.dataset.def?JSON.parse(el.dataset.def):{}}),
  back:()=>{S.stack.pop();renderSheet()},closeall:()=>{S.stack=[];renderSheet()},
  async del(id,arg){if(!confirm('Delete this record? This cannot be undone.'))return;try{await remove(arg,id);S.stack.pop();toast('Deleted');renderMain();renderSheet()}catch(e){toast(errMsg(e))}},
- group:(id,arg)=>{S.f.group=arg;renderMain()},
- sup:id=>{S.f.hide.has(id)?S.f.hide.delete(id):S.f.hide.add(id);renderMain()},
- eol:()=>{S.f.showEol=!S.f.showEol;renderMain()},
- phase:(id,arg)=>{S.pf.phase=arg;renderMain()},cat:(id,arg)=>{S.pf.cat=arg;renderMain()},
- statgo:(id,arg)=>{if(arg==='mig')S.tab='transitions';else{S.pf.phase=arg;S.pf.cat='all';S.tab='products'}renderAll();window.scrollTo(0,0)},
+ group:(id,arg)=>{S.f.group=arg;refreshResults()},
+ fx:(v,k)=>{const L=S.F[k];const i=L.indexOf(v);if(i>=0)L.splice(i,1);else L.push(v);refreshResults()},
+ fclr:(id,k)=>{S.F[k]=[];refreshResults()},
+ fclrall:()=>{FGROUPS.forEach(g=>S.F[g.k]=[]);S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
+ ftoggle:(id,arg,el)=>{S.fOpen=!S.fOpen;$('#fbody')?.classList.toggle('open',S.fOpen);el.setAttribute('aria-expanded',S.fOpen)},
+ zoom:(id,arg)=>{if(arg==='today')return zoomToday();setZoom(S.mw*(arg==='in'?1.4:1/1.4))},
+ statgo:(id,arg)=>{if(arg==='mig')S.tab='transitions';else{S.F.ph=[arg];S.tab='products';saveView()}S.stack=[];renderAll();window.scrollTo(0,0)},
  refresh:async()=>{await reload();toast('Up to date')},
  export(){const b=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`roadmap-export-${iso(today)}.json`;document.body.appendChild(a);a.click();a.remove()},
  resetdemo(){if(confirm('Reset the sample data on this device?')){localStorage.removeItem(Demo.key);location.reload()}},
@@ -658,7 +802,40 @@ document.addEventListener('change',async e=>{
   if(t.type==='checkbox'&&t.closest('label.chip'))t.closest('label.chip').classList.toggle('on',t.checked);
   if(t.dataset.change==='mig'){try{await save('customer_products',{id:t.dataset.id,transition_status:t.value});t.style.borderLeftColor=MIGC[t.value];toast('Status updated');renderMain()}catch(err){toast(errMsg(err))}}
 });
-document.addEventListener('input',e=>{if(e.target.id==='q'){S.pf.q=e.target.value;$('#plist').innerHTML=productList()}});
+document.addEventListener('input',e=>{if(e.target.id==='q'){S.F.q=e.target.value;clearTimeout(refreshResults.t);refreshResults.t=setTimeout(refreshResults,120)}});
+
+/* ---------- zoom gestures ---------- */
+const inTl=t=>t&&t.closest&&t.closest('.tl');
+// iPhone / Android: two-finger pinch on the timeline
+(function(){
+  let pz=null,raf=0,pending=null;
+  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  const mid=t=>(t[0].clientX+t[1].clientX)/2;
+  function move(e){if(!pz||e.touches.length<2)return;e.preventDefault();
+    pending=[pz.mw*dist(e.touches)/pz.d,mid(e.touches)];
+    if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(pending)setZoom(pending[0],pending[1])})}
+  function end(e){if(pz&&e.touches.length<2){pz.els.forEach(el=>{el.removeEventListener('touchmove',move);el.removeEventListener('touchend',end);el.removeEventListener('touchcancel',end)});pz=null;saveView()}}
+  document.addEventListener('touchstart',e=>{
+    if(e.touches.length!==2||!inTl(e.touches[0].target))return;
+    e.preventDefault();
+    // listen on the touched elements too: they get re-rendered (detached) while zooming
+    const els=[...new Set([e.touches[0].target,e.touches[1].target,document])];
+    pz={d:dist(e.touches),mw:S.mw,els};
+    els.forEach(el=>{el.addEventListener('touchmove',move,{passive:false});el.addEventListener('touchend',end);el.addEventListener('touchcancel',end)});
+  },{passive:false});
+  // stop iOS Safari zooming the whole page when pinching the timeline
+  ['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>{if(pz||inTl(e.target))e.preventDefault()},{passive:false}));
+})();
+// Desktop: Ctrl/⌘ + wheel, and trackpad pinch (sent as ctrl+wheel by Chrome/Edge/Firefox)
+document.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey)||!inTl(e.target))return;e.preventDefault();setZoom(S.mw*Math.exp(-Math.max(-50,Math.min(50,e.deltaY))*0.006),e.clientX)},{passive:false});
+// Safari on Mac: trackpad pinch arrives as gesture events
+if(!('ontouchstart' in window)){let g0=null;
+  document.addEventListener('gesturestart',e=>{if(inTl(e.target)){e.preventDefault();g0=S.mw}},{passive:false});
+  document.addEventListener('gesturechange',e=>{if(g0!=null){e.preventDefault();setZoom(g0*e.scale,e.clientX)}},{passive:false});
+  document.addEventListener('gestureend',()=>{g0=null});}
+// re-layout when the window crosses the phone/desktop breakpoint or rotates
+let _wasWide=wide()+'|'+(innerWidth>=1100);
+addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(()=>{const k=wide()+'|'+(innerWidth>=1100);if(k!==_wasWide&&$('nav.tabs')){_wasWide=k;saveTl();renderAll()}},150)});
 document.addEventListener('submit',async e=>{
   const f=e.target;e.preventDefault();
   if(f.id==='conn'){const fd=new FormData(f);localStorage.setItem('rm_cfg',JSON.stringify({url:fd.get('url').trim().replace(/\/$/,''),key:fd.get('key').trim()}));location.reload();return}
