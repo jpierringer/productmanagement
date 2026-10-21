@@ -131,7 +131,7 @@ label.l{display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bot
 .ev{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .ev:first-child{border-top:0}
 .ev .grow{flex:1;min-width:0}
-.ev .dt{width:58px;flex:none;font-size:12px;color:var(--mut);text-align:right;padding-top:1px}
+.ev .dt{width:72px;flex:none;font-size:12px;color:var(--mut);text-align:right;padding-top:1px}
 .mig{display:flex;align-items:center;gap:8px;margin-top:8px}
 .mig select{padding:7px 30px 7px 10px;font-size:14px;width:auto;flex:1}
 .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -158,6 +158,7 @@ a{color:var(--acc)}
 .zl{font-size:12px;min-width:62px;text-align:center}
 .tl{touch-action:pan-x pan-y}
 .tl-q.qs{color:var(--ink);font-weight:600}
+.tl-yl{display:block;font-size:12px;color:var(--ink);margin-top:2px}
 .ztip{margin-left:auto;font-style:italic}
 .hov{position:fixed;z-index:35;width:320px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(2,6,23,.22);padding:12px 14px;font-size:13px;pointer-events:none;animation:fade .12s}
 .hov.touch{pointer-events:auto}
@@ -168,7 +169,7 @@ a{color:var(--acc)}
 .hov .tr b{font-size:14px}
 .hov .hx{display:flex;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
 .hov .hx:first-of-type{border-top:0}
-.hov .hx .dt{width:52px;flex:none;color:var(--mut);font-size:12px}
+.hov .hx .dt{width:68px;flex:none;color:var(--mut);font-size:12px}
 .hov .warn{color:var(--bad);font-weight:600}
 .hov .ft{color:var(--mut);font-size:11.5px;margin-top:8px}
 .tl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -338,7 +339,7 @@ const iso=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+Stri
 const rel=m=>iso(new Date(today.getFullYear(),today.getMonth()+m,1));
 function d(s){if(!s)return null;const[y,m,dd]=String(s).slice(0,10).split('-').map(Number);return new Date(y,m-1,dd)}
 const fmt=s=>s?d(s).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'—';
-const fmtMY=s=>s?d(s).toLocaleDateString(undefined,{month:'short',year:'2-digit'}):'—';
+const fmtMY=s=>s?d(s).toLocaleDateString(undefined,{month:'short',year:'numeric'}):'—';  // e.g. "Mar 2027" (never "Mar 27")
 const daysUntil=s=>Math.round((d(s)-today)/864e5);
 function relTxt(s){if(!s)return'';const n=daysUntil(s),a=Math.abs(n);if(n===0)return'today';const t=a<60?a+' days':Math.round(a/30.4)+' mo';return n>0?'in '+t:t+' ago'}
 const tempPw=()=>S.mode==='live'&&!!S.user&&S.user.user_metadata?.pw_set!==true;
@@ -693,7 +694,7 @@ function timelineInner(products){
   keys.forEach(k=>{const L=groups.get(k).sort((a,b)=>firstDate(a).localeCompare(firstDate(b)));
     body+=`<div class="tl-grp"><div class="tl-glab">${esc(k)} · ${L.length}</div></div>`;
     L.forEach(p=>body+=tlRow(p,X,W,grid))});
-  return`<div class="tl-in" style="width:${LW+W}px"><div class="tl-head"><div class="tl-corner">${products.length} product${products.length===1?'':'s'}</div><div class="tl-years" style="width:${W}px">${head}</div></div>${body}<div class="tl-today" style="left:${LW+tx}px"></div></div>`;
+  return`<div class="tl-in" style="width:${LW+W}px"><div class="tl-head"><div class="tl-corner">${products.length} product${products.length===1?'':'s'}<b class="tl-yl"></b></div><div class="tl-years" style="width:${W}px">${head}</div></div>${body}<div class="tl-today" style="left:${LW+tx}px"></div></div>`;
 }
 function tlRow(p,X,W,grid){
   const ph=phase(p),pts=[],rd=d(p.supplier_release_date),od=d(p.onboard_date),nd=d(p.nrnd_date),ld=d(p.ltb_date),ed=d(p.eol_date);
@@ -715,10 +716,16 @@ function tlRow(p,X,W,grid){
   return`<div class="tl-row" data-act="product" data-id="${p.id}"><div class="tl-lab"><b><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:7px;height:7px;margin-right:5px;vertical-align:1px"></i>${esc(p.part_number)}</b><span>${esc(p.name)}</span></div><div class="tl-track" style="width:${W}px;${grid}">${bars}</div></div>`;
 }
 function saveTl(){const t=$('.tl');if(t)S.tlScroll=[S.tlY0*12+t.scrollLeft/S.mw,t.scrollTop]}
+function tlYear(){const t=$('.tl'),y=$('.tl-yl');if(!t||!y||S.tlY0==null)return;
+  const m=Math.max(0,t.scrollLeft/S.mw),yr=S.tlY0+Math.floor(m/12),mo=Math.floor(m%12);
+  y.textContent=(MSHORT[mo]||'')+' '+yr+' →'}
+const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('tl'))tlYear()},true);
 function restoreTl(){
   const tl=$('.tl');if(!tl)return;
   if(S.tlScroll){tl.scrollLeft=(S.tlScroll[0]-S.tlY0*12)*S.mw;tl.scrollTop=S.tlScroll[1]}
   else tl.scrollLeft=Math.max(0,S.tlToday-(tl.clientWidth-LW)*0.3);
+  tlYear();
 }
 /* zoom, keeping the date under `clientX` fixed on screen */
 function setZoom(mw,clientX){hovHide();
@@ -729,7 +736,7 @@ function setZoom(mw,clientX){hovHide();
   if(Math.abs(mw-S.mw)<0.05)return;
   S.mw=mw;const st=tl.scrollTop;
   tl.innerHTML=timelineInner(S.rows);
-  tl.scrollLeft=month*S.mw-xIn+LW;tl.scrollTop=st;
+  tl.scrollLeft=month*S.mw-xIn+LW;tl.scrollTop=st;tlYear();
   const zl=$('.zl');if(zl)zl.textContent=S.mw>=36?'Months':S.mw>=9?'Quarters':'Years';
   clearTimeout(setZoom.t);setZoom.t=setTimeout(saveView,300);
 }
