@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Roadmap">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Product Portfolio Roadmap</title>
+<title>Product Roadmap</title>
 <meta name="theme-color" content="#1d4ed8">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -172,6 +172,12 @@ a{color:var(--acc)}
 .hov .warn{color:var(--bad);font-weight:600}
 .hov .ft{color:var(--mut);font-size:11.5px;margin-top:8px}
 .tl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* collapsible filter panel */
+.shead,.srail{display:none}
+.fpills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:12.5px}
+.fpill{border:1px solid var(--line);background:color-mix(in srgb,var(--acc) 10%,var(--card));color:var(--ink);border-radius:999px;padding:4px 10px;font-size:12.5px}
+.fpill:hover{border-color:var(--acc)}
+.side:has(.fbody.open)+.mainc .fpills{display:none}
 /* desktop & landscape */
 @media (min-width:900px), (orientation:landscape) and (min-width:700px){
   body{padding-left:84px}
@@ -185,6 +191,18 @@ a{color:var(--acc)}
   .side{position:sticky;top:62px;max-height:calc(100vh - 74px);overflow-y:auto;padding-bottom:16px;scrollbar-width:thin}
   .ftoggle{display:none}
   .fbody{display:block}
+  .shead{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:-2px 0 6px;padding-left:2px}
+  .shead .btn{font-size:18px;line-height:1;padding:2px 8px;color:var(--mut)}
+  .shead .btn:hover{color:var(--acc)}
+  .split{transition:grid-template-columns .2s ease}
+  .split:not(.collapsed) .fpills{display:none}
+  .split.collapsed{grid-template-columns:48px minmax(0,1fr)}
+  .split.collapsed .shead,.split.collapsed .sfull{display:none}
+  .split.collapsed .srail{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 0;box-shadow:var(--shadow)}
+  .srail button{position:relative;width:38px;height:38px;border:0;border-radius:10px;background:none;color:var(--mut);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .srail button:hover{background:var(--chip);color:var(--acc)}
+  .sbadge{position:absolute;top:2px;right:1px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--acc);color:#fff;font-size:10px;font-weight:700;line-height:16px}
+
   .stats{grid-template-columns:repeat(4,1fr);margin-top:0}
   .stat b{font-size:24px}
   .tlbar{margin-top:12px}
@@ -249,8 +267,8 @@ const PHG_OF={evaluating:'pipeline',onboarding:'pipeline',active:'active',nrnd:'
 /* ---------- state ---------- */
 const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
   f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[]};
-try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw}}catch(e){}
-function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw}))}catch(e){}}
+try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true}}catch(e){}
+function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol}))}catch(e){}}
 TABLES.forEach(t=>S.data[t]=[]);
 
 /* ---------- helpers ---------- */
@@ -499,13 +517,30 @@ function filterBody(){
     opts.map(([v,l,color])=>{const on=sel.includes(v),c=S.data.products.filter(p=>passes(p,g.k)&&g.val(p).includes(v)).length;
       return`<button class="chip fchip ${on?'on':''} ${!c&&!on?'zero':''}" data-act="fx" data-arg="${g.k}" data-id="${esc(v)}">${color?`<i class="dot" style="background:${esc(color)};width:8px;height:8px"></i>`:''}${esc(l)}<span class="cnt">${c}</span></button>`}).join('')+`</div></div>`}).join('');
 }
+const ICO_FILTER='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg>';
+const ICO_SEARCH='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>';
 function splitView(results,extraTop=''){
-  return`${extraTop}<div class="split"><aside class="side">${filterBar()}</aside><section class="mainc" id="results">${results()}</section></div>`;
+  const n=activeCount();
+  return`${extraTop}<div class="split ${S.sideCol?'collapsed':''}"><aside class="side">
+    <div class="shead"><span>Search &amp; filters</span><button class="btn ghost sm" data-act="sidecol" title="Collapse panel" aria-label="Collapse filter panel">«</button></div>
+    <div class="sfull">${filterBar()}</div>
+    <div class="srail"><button data-act="sideexp" title="Show filters" aria-label="Show filters">${ICO_FILTER}<span class="sbadge" ${n?'':'hidden'}>${n}</span></button>
+      <button data-act="sideexp" data-arg="search" title="Search" aria-label="Search">${ICO_SEARCH}</button><button data-act="sideexp" class="sexp" aria-label="Expand">»</button></div>
+  </aside><section class="mainc" id="results">${results()}</section></div>`;
+}
+/* removable pills summarising active filters (shown when the panel is folded away) */
+function filterPills(){
+  const out=[];
+  if(S.F.q.trim())out.push(`<button class="fpill" data-act="fq">“${esc(S.F.q.trim())}” ✕</button>`);
+  FGROUPS.forEach(g=>{if(!S.F[g.k].length)return;const o=new Map(g.opts().map(x=>[x[0],x[1]]));
+    S.F[g.k].forEach(v=>out.push(`<button class="fpill" data-act="fx" data-arg="${g.k}" data-id="${esc(v)}">${esc(o.get(v)||v)} ✕</button>`))});
+  return out.length?`<div class="fpills"><span class="mut">Filtered:</span>${out.join('')}<button class="btn ghost sm" data-act="fclrall">Clear all</button></div>`:'';
 }
 function refreshResults(){hovHide();
   saveTl();
   const fb=$('#fbody');if(fb)fb.innerHTML=filterBody();
   const tg=$('.ftoggle');if(tg){const n=FGROUPS.reduce((a,g)=>a+S.F[g.k].length,0);tg.textContent='Filters'+(n?` · ${n}`:'');tg.classList.toggle('has',!!n)}
+  const sb=$('.sbadge');if(sb){const n=activeCount();sb.textContent=n;sb.hidden=!n}
   const r=$('#results');if(r)r.innerHTML=(S.tab==='roadmap'?roadmapResults:productResults)();
   restoreTl();saveView();
 }
@@ -522,7 +557,7 @@ function roadmapResults(){
   S.rows=ps;
   const up=upcoming(12,ids).slice(0,10);
   const zl=S.mw>=36?'Months':S.mw>=9?'Quarters':'Years';
-  return`<div class="stats">${stat(cnt(['active']),'Active','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
+  return`${filterPills()}<div class="stats">${stat(cnt(['active']),'Active','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
   ${stat(cnt(['nrnd','ltb']),'Phasing out','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
   <div class="tlbar"><div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
     <div class="zoom"><button class="btn sm" data-act="zoom" data-arg="out" aria-label="Zoom out">−</button><span class="mut zl">${zl}</span><button class="btn sm" data-act="zoom" data-arg="in" aria-label="Zoom in">+</button><button class="btn sm" data-act="zoom" data-arg="today">Today</button></div></div>
@@ -628,7 +663,7 @@ function zoomToday(){const tl=$('.tl');if(tl)tl.scrollTo({left:Math.max(0,S.tlTo
 function viewProducts(){return splitView(productResults)+fab('products')}
 function productResults(){
   const L=filtered().sort((a,b)=>a.part_number.localeCompare(b.part_number));
-  return`<div class="glist">${L.length?L.map(productItem).join(''):'<div class="empty">No products match these filters.</div>'}</div>`;
+  return`${filterPills()}<div class="glist">${L.length?L.map(productItem).join(''):'<div class="empty">No products match these filters.</div>'}</div>`;
 }
 function productItem(p){
   const s=sup(p),nm=nextMilestone(p);
@@ -799,6 +834,9 @@ const A={
  group:(id,arg)=>{S.f.group=arg;refreshResults()},
  fx:(v,k)=>{const L=S.F[k];const i=L.indexOf(v);if(i>=0)L.splice(i,1);else L.push(v);refreshResults()},
  fclr:(id,k)=>{S.F[k]=[];refreshResults()},
+ sidecol:()=>{hovHide();S.sideCol=true;$('.split')?.classList.add('collapsed');saveView()},
+ sideexp:(id,arg)=>{S.sideCol=false;$('.split')?.classList.remove('collapsed');saveView();if(arg==='search')setTimeout(()=>$('#q')?.focus(),60)},
+ fq:()=>{S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
  fclrall:()=>{FGROUPS.forEach(g=>S.F[g.k]=[]);S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
  ftoggle:(id,arg,el)=>{S.fOpen=!S.fOpen;$('#fbody')?.classList.toggle('open',S.fOpen);el.setAttribute('aria-expanded',S.fOpen)},
  zoom:(id,arg)=>{if(arg==='today')return zoomToday();setZoom(S.mw*(arg==='in'?1.4:1/1.4))},
@@ -969,7 +1007,7 @@ async function renameMarket(from,to){
 
 /* ---------- boot ---------- */
 function renderLogin(){
-  $('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 4px">Product Portfolio Roadmap</h2><p class="mut" style="margin-top:0">Sign in with your team account.</p>
+  $('#app').innerHTML=`<div class="center"><div class="card"><h2 style="margin:0 0 4px">Product Roadmap</h2><p class="mut" style="margin-top:0">Sign in with your team account.</p>
   <form id="login"><div class="field"><label class="l">Email</label><input name="email" type="email" autocomplete="username" required></div><div class="field"><label class="l">Password</label><input name="password" type="password" autocomplete="current-password" required></div>
   <div id="lerr" style="color:var(--bad);font-size:13px"></div><button class="btn pri block">Sign in</button></form>
   <p class="mut" style="font-size:12.5px;margin:12px 0 0">Forgot your password? Ask your roadmap admin to reset it. Once signed in, you can change it under More → Your account.</p>
