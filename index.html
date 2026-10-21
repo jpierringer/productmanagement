@@ -227,6 +227,8 @@ a{color:var(--acc)}
 .meter{display:inline-block;width:42px;height:6px;border-radius:3px;background:var(--line);vertical-align:middle;overflow:hidden;margin-right:4px}
 .meter i{display:block;height:100%}
 .miss{font-size:11.5px;color:var(--warn);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hwgrid{display:grid;grid-template-columns:1fr;gap:0 12px}
+@media (min-width:700px){.hwgrid{grid-template-columns:1fr 1fr}}
 /* collapsible filter panel */
 .shead,.srail{display:none}
 .fpills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:12.5px}
@@ -456,6 +458,26 @@ const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.n
 const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
 const IMP=[['unknown','Not assessed'],['none','None'],['minor','Minor'],['major','Major']];
 const IFACES=['CAN','Ethernet','Automotive Ethernet (T1)','RS232','RS485','LIN','USB','GMSL2','Wi-Fi','Bluetooth','Cellular (LTE/5G)','GNSS','LoRaWAN','SENT'];
+/* hardware spec templates per category (stored in products.hardware as {field: text}) */
+const HW_CTL=['Processor','Cores / clock','RAM','Flash / storage','Co-processor / GPU','Operating system','Power / supply','Operating temperature','Power consumption'];
+const HWT={controller:HW_CTL,telematics:HW_CTL,
+  display:['Screen size','Resolution','Touch','Encoder / keys','Processor','OS / HMI tool','Power / supply','Operating temperature'],
+  sensor:['Measurand / technology','Range','Accuracy / resolution','Field of view','Update rate','Output signal','Media','Power / supply','Operating temperature'],
+  module:['Channels','Max current','Power / supply','Operating temperature'],
+  software:['License model','Supported hardware / OS'],
+  other:['Power / supply','Operating temperature']};
+const HW_PH={'Processor':'e.g. Infineon AURIX TC397','Cores / clock':'e.g. 6-core @ 300 MHz','RAM':'e.g. 512 MB DDR3','Flash / storage':'e.g. 8 GB eMMC',
+  'Co-processor / GPU':'e.g. i.MX6, FPGA','Operating system':'e.g. Linux (Yocto)','Power / supply':'e.g. 8–32 VDC','Operating temperature':'e.g. -40 to +85 °C',
+  'Power consumption':'e.g. < 5 W','Screen size':'e.g. 7 in','Resolution':'e.g. 1024 × 600','Touch':'e.g. Capacitive, glove-capable','Encoder / keys':'e.g. Encoder + 6 keys',
+  'OS / HMI tool':'e.g. Linux / CODESYS TargetVisu','Measurand / technology':'e.g. Pressure','Range':'e.g. 0–400 bar','Accuracy / resolution':'e.g. ±0.5 % FS',
+  'Field of view':'e.g. 120 × 30 deg','Update rate':'e.g. 20 Hz','Output signal':'e.g. 4–20 mA, CAN J1939','Media':'e.g. Hydraulic oil','Channels':'e.g. 8',
+  'Max current':'e.g. 3 A per channel, 12 A total','License model':'e.g. Per seat, annual','Supported hardware / OS':'e.g. ESX.4 series, Windows'};
+// raw datasheet labels that were copied into the hardware fields (hidden from "Datasheet specs" in Compare to avoid duplicates)
+const HW_RAW=new Set(['Processor','Cores / Clock','RAM','Flash','Storage','Co-processor','OS','Power / Supply','Operating Temp','Screen Size (in)','Resolution','Touch','Encoder / Keys','OS / HMI Tool','Measurand','Technology','Range','Accuracy','Field of View','Frame / Update Rate','Output / Interface','Interface','Media','Power','Supply Voltage','Max Current','Output Current','Channels / Ports']);
+const hwKeys=(cat,hw)=>{const t=HWT[cat]||HWT.other;return[...t,...Object.keys(hw||{}).filter(k=>!t.includes(k))]};
+function hwFieldsHTML(cat,hw){hw=hw||{};const t=HWT[cat]||HWT.other;
+  return hwKeys(cat,hw).map(k=>`<div class="field"><label class="l">${esc(k)}${t.includes(k)?'':' <span class="mut">(from another category)</span>'}</label><input data-hwk="${esc(k)}" value="${esc(hw[k]??'')}" placeholder="${esc(HW_PH[k]||'')}" autocomplete="off"></div>`).join('')}
+function collectHW(root){const o={};root.querySelectorAll('[data-hwk]').forEach(i=>{const v=i.value.trim();if(v)o[i.dataset.hwk]=v});return o}
 const IFG=[['Wired networking',['CAN','Ethernet','Automotive Ethernet (T1)','RS232','RS485','LIN','USB']],
   ['Wireless',['Wi-Fi','Bluetooth','Cellular (LTE/5G)','GNSS','LoRaWAN']],
   ['Sensor & video links',['GMSL2','SENT']]];
@@ -485,6 +507,7 @@ const FORMS={
   {k:'nrnd_date',l:'NRND / supplier EOL notice',t:'date'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'last_ship_date',l:'Last ship',t:'date'},
   {k:'end_of_support_date',l:'End of support',t:'date'},{k:'eol_date',l:'End of life (timeline end)',t:'date'},
   {h:'Software & safety'},{k:'software_platform',l:'Software platform / version'},{k:'functional_safety',l:'Functional safety'},
+  {h:'Hardware'},{k:'hardware',t:'hw'},
   {h:'Connectivity'},{k:'interfaces',l:'Wired networking',t:'multi',o:ifGroupOpts('Wired networking')},{k:'can_protocols',l:'CAN protocols',t:'multi',o:canOpts()},
   {k:'interfaces',l:'Wireless',t:'multi',o:ifGroupOpts('Wireless')},{k:'interfaces',l:'Sensor & video links',t:'multi',o:ifGroupOpts('Sensor & video links')},
   ...(ifGroupOpts('Other interfaces').length?[{k:'interfaces',l:'Other interfaces',t:'multi',o:ifGroupOpts('Other interfaces')}]:[]),
@@ -529,6 +552,7 @@ const flat=fs=>fs.flatMap(f=>f.row?f.row:f.h?[]:[f]);
 function fieldHTML(f,v){
   if(f.h)return`<div class="fh">${esc(f.h)}</div>`;
   if(f.row)return`<div class="grid3">${f.row.map(x=>fieldHTML(x,v)).join('')}</div>`;
+  if(f.t==='hw')return`<div id="hwfields" class="hwgrid">${hwFieldsHTML(v.category,v.hardware)}</div>`;
   const val=v[f.k],req=f.req?'required':'';let inp;
   if(f.t==='select')inp=`<select name="${f.k}" ${req}>${f.req?'':'<option value="">—</option>'}${f.o.map(([a,b])=>`<option value="${esc(a)}" ${String(val??'')===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
   else if(f.t==='multi')inp=`<div class="chips wrap">${f.o.map(([a,b])=>{const on=(val||[]).includes(a);return`<label class="chip ${on?'on':''}"><input type="checkbox" name="${f.k}" value="${esc(a)}" ${on?'checked':''} hidden>${esc(b)}</label>`}).join('')||'<span class="mut">Add markets on the More tab</span>'}</div>`;
@@ -536,7 +560,7 @@ function fieldHTML(f,v){
   else inp=`<input name="${f.k}" type="${f.t||'text'}" value="${esc(val??'')}" ${req} ${f.t==='number'?'step="any" inputmode="decimal"':''}>`;
   return`<div class="field"><label class="l">${esc(f.l)}${f.req?' *':''}</label>${inp}</div>`;
 }
-function collect(form,fields){const fd=new FormData(form),o={};flat(fields).forEach(f=>{if(f.t==='multi')o[f.k]=fd.getAll(f.k);else{let v=fd.get(f.k);v=(v===''||v==null)?null:f.t==='number'?Number(v):v;o[f.k]=v}});return o}
+function collect(form,fields){const fd=new FormData(form),o={};flat(fields).forEach(f=>{if(f.t==='hw')o[f.k]=collectHW(form);else if(f.t==='multi')o[f.k]=fd.getAll(f.k);else{let v=fd.get(f.k);v=(v===''||v==null)?null:f.t==='number'?Number(v):v;o[f.k]=v}});return o}
 
 /* ---------- views ---------- */
 const ICONS={compare:'<rect x="3.5" y="4" width="7" height="16" rx="1.6"/><rect x="13.5" y="4" width="7" height="16" rx="1.6"/><path d="M5.5 9h3M5.5 13h3M15.5 9h3M15.5 13h3"/>',roadmap:'<path d="M4 6h9M4 12h14M4 18h7"/><circle cx="16" cy="6" r="1.6"/><circle cx="20" cy="12" r="1.6"/><circle cx="14" cy="18" r="1.6"/>',
@@ -765,6 +789,7 @@ function completeness(p){
   if(!sw)c.push(['Interfaces',(p.interfaces||[]).length>0]);
   if(['controller','module'].includes(p.category))c.push(['I/O counts',p.inputs!=null||p.outputs!=null]);
   if(!sw)c.push(['Dimensions',p.length_mm!=null]);
+  if(!sw){const t=HWT[p.category]||HWT.other,n=t.filter(k=>(p.hardware||{})[k]).length;c.push(['Hardware specs',n>=Math.ceil(t.length/2)])}
   if(['nrnd','ltb','eol'].includes(ph))c.push(['Successor',S.data.transitions.some(t=>t.from_product_id===p.id)]);
   const done=c.filter(x=>x[1]).length;
   return{done,total:c.length,ratio:c.length?done/c.length:1,missing:c.filter(x=>!x[1]).map(x=>x[0])};
@@ -806,8 +831,9 @@ function listSection(ps){
 }
 function exportCSV(){
   const L=listRows(S.rows),q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-  const H=['Product ID','Part number','Description','Supplier','Category','Status','Supplier release','Onboard','NRND','LTB','Last ship','EOL','List price','Cost','Currency','Price basis','Inputs','Outputs','CAN ports','Ethernet ports','Interfaces','CAN protocols','Markets','Successor','Missing data'];
-  const rows=L.map(p=>[p.product_code,p.part_number,p.name,sup(p)?.name,CATS1[p.category],LC[phase(p)]?.l,p.supplier_release_date,p.onboard_date,p.nrnd_date,p.ltb_date,p.last_ship_date,p.eol_date,p.list_price,p.cost,p.currency,p.price_basis,p.inputs,p.outputs,p.can_ports,p.ethernet_ports,(p.interfaces||[]).join('; '),(p.can_protocols||[]).join('; '),(p.markets||[]).join('; '),S.data.transitions.filter(t=>t.from_product_id===p.id).map(t=>pnOf(t.to_product_id)).join('; '),completeness(p).missing.join('; ')].map(q).join(','));
+  const ORD=[...new Set(Object.values(HWT).flat())],hwk=[...new Set(L.flatMap(p=>Object.keys(p.hardware||{})))].sort((a,b)=>(ORD.indexOf(a)+1||99)-(ORD.indexOf(b)+1||99));
+  const H=['Product ID','Part number','Description','Supplier','Category','Status','Supplier release','Onboard','NRND','LTB','Last ship','EOL','List price','Cost','Currency','Price basis','Inputs','Outputs','CAN ports','Ethernet ports','Interfaces','CAN protocols','Markets','Successor','Missing data',...hwk.map(k=>'HW: '+k)];
+  const rows=L.map(p=>[p.product_code,p.part_number,p.name,sup(p)?.name,CATS1[p.category],LC[phase(p)]?.l,p.supplier_release_date,p.onboard_date,p.nrnd_date,p.ltb_date,p.last_ship_date,p.eol_date,p.list_price,p.cost,p.currency,p.price_basis,p.inputs,p.outputs,p.can_ports,p.ethernet_ports,(p.interfaces||[]).join('; '),(p.can_protocols||[]).join('; '),(p.markets||[]).join('; '),S.data.transitions.filter(t=>t.from_product_id===p.id).map(t=>pnOf(t.to_product_id)).join('; '),completeness(p).missing.join('; '),...hwk.map(k=>(p.hardware||{})[k])].map(q).join(','));
   const b=new Blob(['\ufeff'+[H.join(','),...rows].join('\r\n')],{type:'text/csv'}),a=document.createElement('a');
   a.href=URL.createObjectURL(b);a.download=`portfolio-${iso(today)}.csv`;document.body.appendChild(a);a.click();a.remove();
 }
@@ -838,6 +864,8 @@ function cmpRows(cols){
   sec('Overview');
   row('Supplier',p=>sup(p)?.name||'');row('Status',p=>LC[phase(p)]?.l||'',{html:p=>badge(phase(p))});
   row('Family',p=>p.family||'');row('Sub-type',p=>p.sub_type||'');row('Markets',p=>(p.markets||[]).join(', '));
+  sec('Hardware');
+  [...new Set(cols.flatMap(p=>hwKeys(S.cmp.cat,p.hardware)))].forEach(k=>row(k,p=>(p.hardware||{})[k]||''));
   sec('Pricing');
   row('List price',p=>p.list_price??null,{num:1,best:'min',html:p=>money(p.list_price,p.currency)});
   row('Our cost',p=>p.cost??null,{num:1,best:'min',html:p=>money(p.cost,p.currency)});
@@ -862,7 +890,7 @@ function cmpRows(cols){
   sec('Lifecycle');
   row('Supplier release',p=>fmtD(p.supplier_release_date));row('NRND',p=>fmtD(p.nrnd_date));row('Last-time buy',p=>fmtD(p.ltb_date));row('End of life',p=>fmtD(p.eol_date));
   row('Successor',p=>S.data.transitions.filter(t=>t.from_product_id===p.id).map(t=>pnOf(t.to_product_id)).join(', '));
-  const sk=[...new Set(cols.flatMap(p=>Object.keys(p.specs||{})))].filter(k=>k!=='Notes');
+  const sk=[...new Set(cols.flatMap(p=>Object.keys(p.specs||{})))].filter(k=>k!=='Notes'&&!HW_RAW.has(k));
   if(sk.length){sec('Datasheet specs');sk.forEach(k=>row(k,p=>(p.specs||{})[k]??''))}
   return R;
 }
@@ -1020,6 +1048,8 @@ const SHEETS={
    ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
    <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
     ${dateRows.map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
+   <div class="sec"><h2>Hardware</h2></div>${(()=>{const hw=p.hardware||{},ks=hwKeys(p.category,hw).filter(k=>hw[k]);
+      return ks.length?`<div class="card kv">${ks.map(k=>kvItem(esc(k),esc(hw[k]))).join('')}</div>`:`<div class="card empty" style="padding:14px">No hardware specs yet${canEdit()?' — tap Edit to add them.':'.'}</div>`})()}
    <div class="sec"><h2>Connectivity</h2></div><div class="card kv">${(()=>{const gs=IF_GROUPS().map(g=>[g,ifIn(p,g)]);
       const order=[gs[0],['CAN protocols',p.can_protocols||[]],...gs.slice(1)];
       const shown=order.filter(([g,a],i)=>a.length||i<2);
@@ -1030,7 +1060,7 @@ const SHEETS={
    ${p.markets?.length?`<div class="chips wrap" style="margin-top:4px">${p.markets.map(m=>`<span class="chip">${esc(m)}</span>`).join('')}</div>`:''}
    ${p.list_price!=null||p.cost!=null?`<div class="sec"><h2>Pricing</h2>${p.price_date?`<span class="mut">as of ${fmt(p.price_date)}</span>`:''}</div><div class="card kv">${kvItem('List price',money(p.list_price,p.currency),p.price_basis?esc(p.price_basis):'')}${kvItem('Our cost',money(p.cost,p.currency))}${margin(p)!=null?kvItem('Margin',Math.round(margin(p)*100)+'%',money(p.list_price-p.cost,p.currency)+' per unit'):''}</div>`:''}
    <button class="btn sm" data-act="cmpgo" data-id="${p.id}" style="margin-top:12px">⇆ Compare with other ${esc((CATEGORIES.find(c=>c[0]===p.category)||[,'products'])[1].toLowerCase())}</button>
-   ${spec.length?`<details class="card" style="margin-top:10px"><summary style="font-weight:600;cursor:pointer">Datasheet specs (${spec.length})</summary><table class="cmp" style="margin-top:8px">${spec.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></details>`:''}
+   ${spec.length?`<details class="card" style="margin-top:10px"><summary style="font-weight:600;cursor:pointer">Original datasheet capture (${spec.length})</summary><table class="cmp" style="margin-top:8px">${spec.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></details>`:''}
    ${p.product_url||p.datasheet_url?`<p class="row" style="gap:16px">${p.product_url?`<a href="${esc(p.product_url)}" target="_blank" rel="noopener">Product page ↗</a>`:''}${p.datasheet_url?`<a href="${esc(p.datasheet_url)}" target="_blank" rel="noopener">Datasheet ↗</a>`:''}</p>`:''}
    ${p.notes?`<div class="card" style="margin-top:10px;white-space:pre-wrap">${esc(p.notes)}</div>`:''}
    <div class="sec"><h2>Part numbers${pns.length?' · '+pns.length:''}</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="part_numbers" data-def="${esc(JSON.stringify({product_id:p.id}))}">+ Add</button>`:''}</div>
@@ -1047,10 +1077,11 @@ const SHEETS={
   const t=byId('transitions',e.id);if(!t)return null;
   const a=byId('products',t.from_product_id),b=byId('products',t.to_product_id);if(!a||!b)return null;
   const CMP=[['software_platform','Software'],['can_protocols','CAN protocols'],['interfaces','Interfaces'],['inputs','Inputs'],['outputs','Outputs'],['can_ports','CAN ports'],['ethernet_ports','Ethernet ports'],['list_price','List price'],['connector','Connectors'],['length_mm','Length mm'],['width_mm','Width mm'],['height_mm','Height mm'],['weight_g','Weight g'],['mounting','Mounting'],['ip_rating','IP rating']];
-  const sk=[...new Set([...Object.keys(a.specs||{}),...Object.keys(b.specs||{})])].filter(k=>!['Notes','Generation'].includes(k));
+  const sk=[...new Set([...Object.keys(a.specs||{}),...Object.keys(b.specs||{})])].filter(k=>!['Notes','Generation'].includes(k)&&!HW_RAW.has(k));
+  const hk=[...new Set([...hwKeys(a.category,a.hardware),...hwKeys(b.category,b.hardware)])];
   const arr=v=>Array.isArray(v)?(v.length?v.join(', '):null):v;
   const lostCan=(a.can_protocols||[]).filter(x=>!(b.can_protocols||[]).includes(x)),lostIf=(a.interfaces||[]).filter(x=>!(b.interfaces||[]).includes(x));
-  const vals=[...CMP.map(([k,l])=>[l,arr(a[k]),arr(b[k])]),...sk.map(k=>[k,(a.specs||{})[k],(b.specs||{})[k]])].filter(([,x,y])=>x!=null||y!=null);
+  const vals=[...CMP.map(([k,l])=>[l,arr(a[k]),arr(b[k])]),...hk.map(k=>[k,(a.hardware||{})[k],(b.hardware||{})[k]]),...sk.map(k=>[k,(a.specs||{})[k],(b.specs||{})[k]])].filter(([,x,y])=>x!=null||y!=null);
   const rows=vals.map(([l,x,y])=>{const chg=String(x??'')!==String(y??'');let dl='';if(typeof x==='number'&&typeof y==='number'&&x!==y)dl=` <b style="color:var(--warn)">(${y-x>0?'+':''}${+(y-x).toFixed(2)})</b>`;
     if(l==='Interfaces'&&lostIf.length)dl=` <b style="color:var(--bad)">(drops ${esc(lostIf.join(', '))})</b>`;
     if(l==='CAN protocols'&&lostCan.length)dl=` <b style="color:var(--bad)">(drops ${esc(lostCan.join(', '))})</b>`;return`<tr class="${chg?'chg':''}"><td>${l}</td><td>${esc(x??'—')}</td><td>${esc(y??'—')}${dl}</td></tr>`}).join('');
@@ -1138,6 +1169,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(
 document.addEventListener('change',async e=>{
   const t=e.target;
   if(t.type==='checkbox'&&t.closest('label.chip'))t.closest('label.chip').classList.toggle('on',t.checked);
+  if(t.name==='category'&&t.closest('#frm')){const box=$('#hwfields');if(box)box.innerHTML=hwFieldsHTML(t.value,collectHW(box));return}
   if(t.dataset.change==='incOnly'){S.incOnly=t.checked;refreshResults();return}
   if(t.dataset.change==='cmpopt'){S.cmp[t.dataset.arg]=t.checked;refreshCompare();return}
   if(t.dataset.change==='mig'){try{await save('customer_products',{id:t.dataset.id,transition_status:t.value});t.style.borderLeftColor=MIGC[t.value];toast('Status updated');renderMain()}catch(err){toast(errMsg(err))}}
