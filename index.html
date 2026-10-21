@@ -172,6 +172,40 @@ a{color:var(--acc)}
 .hov .warn{color:var(--bad);font-weight:600}
 .hov .ft{color:var(--mut);font-size:11.5px;margin-top:8px}
 .tl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* compare */
+.cmphead{margin:4px 0 10px}
+.cmppick{padding:8px 12px 10px}
+.cmppick .fsh span{display:flex;gap:4px}
+.cmpopts{display:flex;flex-wrap:wrap;gap:6px 18px;margin:4px 2px 10px;font-size:13.5px}
+.tg{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.tg input{width:18px;height:18px;-webkit-appearance:auto;appearance:auto;accent-color:var(--acc);margin:0}
+.cmpw{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow);overscroll-behavior:contain}
+.ctab{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
+.ctab th,.ctab td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;max-width:220px}
+.ctab thead th{position:sticky;top:0;z-index:3;background:var(--card);border-bottom:2px solid var(--line);min-width:120px}
+.ctab tbody th{position:sticky;left:0;z-index:2;background:var(--card);font-weight:600;color:var(--mut);white-space:nowrap;border-right:1px solid var(--line)}
+.ctab thead th.corner{left:0;z-index:4;color:var(--mut);font-weight:600;font-size:12px;border-right:1px solid var(--line)}
+.ctab .ph{cursor:pointer}.ctab .ph:hover .pn{color:var(--acc)}
+.ctab .ph .pn{white-space:nowrap;margin-bottom:4px}
+.ctab td.c{text-align:center}
+.ctab .cy{color:var(--ok);font-weight:800;font-size:15px}
+.ctab .cn{color:var(--line);font-weight:700}
+.ctab td.best{font-weight:800;color:var(--ok)}
+.ctab .cov{text-align:center;color:var(--mut);font-size:12px;white-space:nowrap;background:color-mix(in srgb,var(--chip) 60%,var(--card))}
+.ctab .cov.gp{color:var(--warn);font-weight:600}
+.ctab .cov.g0{color:var(--bad);font-weight:800}
+.ctab tr.gap th{color:var(--bad)}
+.ctab tr.csec td{position:sticky;left:0;background:var(--chip);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);padding:6px 10px}
+.vchart{width:100%;height:auto;max-height:340px;margin:10px 0 4px}
+.vchart .gl{stroke:var(--line)}.vchart .tk{font-size:10.5px;fill:var(--mut)}.vchart .ax{font-size:11.5px;fill:var(--mut);font-weight:600}
+.vchart .vl{stroke:var(--mut);stroke-dasharray:5 5;opacity:.6}
+.vchart .pt{cursor:pointer}.vchart .pt circle{stroke:var(--card);stroke-width:2}.vchart .pl{font-size:11.5px;font-weight:700;fill:var(--ink)}
+@media (max-width:600px){
+  .ctab th,.ctab td{padding:6px 8px;font-size:12.5px}
+  .ctab tbody th{white-space:normal;min-width:92px;max-width:108px;font-size:12px}
+  .ctab thead th{min-width:104px}
+  .ctab thead th.corner{min-width:92px;max-width:108px}
+}
 /* collapsible filter panel */
 .shead,.srail{display:none}
 .fpills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:12.5px}
@@ -211,6 +245,7 @@ a{color:var(--acc)}
   .glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px;align-items:start}
   .glist>.li,.glist>.card{margin:0}
   .narrow{max-width:900px}
+  .cmpw{max-height:calc(100vh - 260px)}
   .sheet{left:auto;right:0;top:0;width:min(620px,100vw);max-width:none;border-radius:0;box-shadow:-10px 0 34px rgba(2,6,23,.18)}
   .sheet.anim{animation:slide .24s ease-out}
 }
@@ -266,9 +301,9 @@ const PHG_OF={evaluating:'pipeline',onboarding:'pipeline',active:'active',nrnd:'
 
 /* ---------- state ---------- */
 const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
-  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[]};
-try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true}}catch(e){}
-function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol}))}catch(e){}}
+  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[],cmp:{cat:'controller',sel:{},diff:false,gaps:true,metric:'io',priceBy:'list'}};
+try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true;if(v.cmp)Object.assign(S.cmp,v.cmp)}}catch(e){}
+function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol,cmp:S.cmp}))}catch(e){}}
 TABLES.forEach(t=>S.data[t]=[]);
 
 /* ---------- helpers ---------- */
@@ -397,13 +432,19 @@ const prodOpts=()=>S.data.products.slice().sort((a,b)=>a.part_number.localeCompa
 const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>[c.id,c.name]);
 const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
 const IMP=[['unknown','Not assessed'],['none','None'],['minor','Minor'],['major','Major']];
+const IFACES=['CAN','Ethernet','Automotive Ethernet (T1)','RS232','RS485','LIN','USB','GMSL2','Wi-Fi','Bluetooth','Cellular (LTE/5G)','GNSS','LoRaWAN','SENT'];
+const ifOpts=()=>[...new Set([...IFACES,...S.data.products.flatMap(p=>p.interfaces||[])])].map(x=>[x,x]);
+const CURR=['USD','EUR','GBP','CAD'];
+function money(v,cur){if(v==null||v==='')return'';try{return new Intl.NumberFormat(undefined,{style:'currency',currency:cur||'USD',maximumFractionDigits:Number(v)%1?2:0}).format(v)}catch(e){return (cur||'')+' '+v}}
+const margin=p=>p.list_price>0&&p.cost!=null?(p.list_price-p.cost)/p.list_price:null;
+const totalIO=p=>p.inputs!=null||p.outputs!=null?(p.inputs||0)+(p.outputs||0):null;
 const CANP=['J1939','CANopen','CANopen Safety','ISOBUS','High-Speed ISOBUS','NMEA 2000','CAN FD'];
 const canOpts=()=>[...new Set([...CANP,...S.data.products.flatMap(p=>p.can_protocols||[])])].map(x=>[x,x]);
 const TTYPES=['Direct replacement','Functional successor','Variant / derivative','Family expansion','Software platform migration'];
 const ttag=t=>`<span class="tag">${esc(t.transition_type||KIND[t.kind]||'')}</span>${t.transition_type&&KIND[t.kind]?`<span class="tag">${KIND[t.kind]}</span>`:''}`;
 const BASIS=[['Stated on website','Stated on website'],['Supplier roadmap','Supplier roadmap'],['Internal (product manager)','Internal (product manager)'],['Inferred - confirm','Inferred - confirm']];
 const FORMS={
- products:{title:'Product',defaults:{lifecycle:'evaluating',category:'controller',markets:[]},fields:()=>[
+ products:{title:'Product',defaults:{lifecycle:'evaluating',category:'controller',markets:[],currency:'USD'},fields:()=>[
   {h:'Product'},{k:'part_number',l:'Model / part number',req:1},{k:'name',l:'Description',req:1},
   {k:'supplier_id',l:'Supplier',t:'select',o:supOpts(),req:1},{k:'category',l:'Category',t:'select',o:Object.entries(CATS1),req:1},
   {k:'family',l:'Series / family'},{k:'sub_type',l:'Sub-type'},{k:'product_code',l:'Product ID (e.g. CTL-17)'},
@@ -413,9 +454,13 @@ const FORMS={
   {h:'Lifecycle dates'},{k:'supplier_release_date',l:'Supplier release',t:'date'},{k:'sample_date',l:'Samples available',t:'date'},{k:'onboard_date',l:'Onboarded by us',t:'date'},
   {k:'nrnd_date',l:'NRND / supplier EOL notice',t:'date'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'last_ship_date',l:'Last ship',t:'date'},
   {k:'end_of_support_date',l:'End of support',t:'date'},{k:'eol_date',l:'End of life (timeline end)',t:'date'},
-  {h:'Fit · form · function'},{k:'software_platform',l:'Software platform / version'},{k:'functional_safety',l:'Functional safety'},{k:'can_protocols',l:'CAN protocols',t:'multi',o:canOpts()},{k:'connector',l:'Connectors / pinout'},
+  {h:'Fit · form · function'},{k:'software_platform',l:'Software platform / version'},{k:'functional_safety',l:'Functional safety'},{k:'can_protocols',l:'CAN protocols',t:'multi',o:canOpts()},{k:'interfaces',l:'Interfaces',t:'multi',o:ifOpts()},
+  {row:[{k:'inputs',l:'Inputs',t:'number'},{k:'outputs',l:'Outputs',t:'number'},{k:'can_ports',l:'CAN ports',t:'number'}]},{k:'ethernet_ports',l:'Ethernet ports',t:'number'},
+  {k:'connector',l:'Connectors / pinout'},
   {row:[{k:'length_mm',l:'Length mm',t:'number'},{k:'width_mm',l:'Width mm',t:'number'},{k:'height_mm',l:'Height mm',t:'number'}]},
   {k:'weight_g',l:'Weight (g)',t:'number'},{k:'mounting',l:'Mounting'},{k:'ip_rating',l:'IP rating'},
+  {h:'Pricing'},{row:[{k:'list_price',l:'List price',t:'number'},{k:'cost',l:'Our cost',t:'number'},{k:'currency',l:'Currency',t:'select',o:CURR.map(c=>[c,c]),req:1}]},
+  {k:'price_basis',l:'Price basis (e.g. qty 100, per unit)'},{k:'price_date',l:'Price as of',t:'date'},
   {h:'Links'},{k:'product_url',l:'Product page',t:'url'},{k:'datasheet_url',l:'Datasheet link',t:'url'},
   {h:'Notes'},{k:'notes',l:'Notes',t:'textarea'}]},
  part_numbers:{title:'Part number',fields:()=>[
@@ -461,12 +506,12 @@ function fieldHTML(f,v){
 function collect(form,fields){const fd=new FormData(form),o={};flat(fields).forEach(f=>{if(f.t==='multi')o[f.k]=fd.getAll(f.k);else{let v=fd.get(f.k);v=(v===''||v==null)?null:f.t==='number'?Number(v):v;o[f.k]=v}});return o}
 
 /* ---------- views ---------- */
-const ICONS={roadmap:'<path d="M4 6h9M4 12h14M4 18h7"/><circle cx="16" cy="6" r="1.6"/><circle cx="20" cy="12" r="1.6"/><circle cx="14" cy="18" r="1.6"/>',
+const ICONS={compare:'<rect x="3.5" y="4" width="7" height="16" rx="1.6"/><rect x="13.5" y="4" width="7" height="16" rx="1.6"/><path d="M5.5 9h3M5.5 13h3M15.5 9h3M15.5 13h3"/>',roadmap:'<path d="M4 6h9M4 12h14M4 18h7"/><circle cx="16" cy="6" r="1.6"/><circle cx="20" cy="12" r="1.6"/><circle cx="14" cy="18" r="1.6"/>',
  products:'<rect x="5" y="5" width="14" height="14" rx="2.5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
  transitions:'<path d="M4 8h14l-4-4M20 16H6l4 4"/>',
  customers:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.4M18 14.8c1.6.7 2.7 2.4 3 5.2"/>',
  more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'};
-const TITLES={roadmap:'Roadmap',products:'Products',transitions:'Transitions',customers:'Customers',more:'More'};
+const TITLES={roadmap:'Roadmap',products:'Products',compare:'Compare',transitions:'Transitions',customers:'Customers',more:'More'};
 const fab=(table,def)=>canEdit()?`<button class="fab" data-act="new" data-arg="${table}" ${def?`data-def="${esc(JSON.stringify(def))}"`:''} aria-label="Add">+</button>`:'';
 
 function renderAll(){
@@ -480,7 +525,7 @@ function renderAll(){
 function renderMain(){
   saveTl();
   const m=$('#main');if(!m)return;
-  m.innerHTML=({roadmap:viewRoadmap,products:viewProducts,transitions:viewTransitions,customers:viewCustomers,more:viewMore})[S.tab]();
+  m.innerHTML=({roadmap:viewRoadmap,products:viewProducts,compare:viewCompare,transitions:viewTransitions,customers:viewCustomers,more:viewMore})[S.tab]();
   restoreTl();
 }
 
@@ -495,7 +540,7 @@ let _pnHit=null,_pnQ=null;
 function qHit(p){
   const q=S.F.q.trim().toLowerCase();if(!q)return true;
   if(_pnQ!==q){_pnQ=q;_pnHit=new Set(S.data.part_numbers.filter(x=>String(x.part_number).toLowerCase().includes(q)).map(x=>x.product_id))}
-  return _pnHit.has(p.id)||[p.part_number,p.name,p.family,p.sub_type,p.product_code,(p.can_protocols||[]).join(' '),(p.markets||[]).join(' '),p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q);
+  return _pnHit.has(p.id)||[p.part_number,p.name,p.family,p.sub_type,p.product_code,(p.can_protocols||[]).join(' '),(p.interfaces||[]).join(' '),(p.markets||[]).join(' '),p.connector,p.software_platform,sup(p)?.name].join(' ').toLowerCase().includes(q);
 }
 function passes(p,except){
   if(!qHit(p))return false;
@@ -670,6 +715,123 @@ function productItem(p){
   return`<div class="li" data-act="product" data-id="${p.id}"><i class="dot" style="background:${esc(s?.color||'#999')}"></i><div class="grow"><div class="pn">${esc(p.part_number)} <span class="mut" style="font-weight:400">· ${esc(p.sub_type||CATS1[p.category]||'')}</span></div><div class="mut ell">${esc(p.name)}</div>${nm?`<div class="mut" style="font-size:12px">${nm.l} ${relTxt(nm.date)}</div>`:''}</div>${badge(phase(p))}</div>`;
 }
 
+/* ---------- Compare tab ---------- */
+// S.cmp = {cat, sel:{[cat]:[ids]}, diff, gaps, metric, priceBy}
+function cmpBase(){return S.data.products.filter(p=>p.category===S.cmp.cat).sort((a,b)=>a.part_number.localeCompare(b.part_number))}
+function cmpSel(){
+  const base=cmpBase();let ids=S.cmp.sel[S.cmp.cat];
+  if(!ids){ // default: current + upcoming products, no accessories, max 8
+    const pick=base.filter(p=>['evaluating','onboarding','active'].includes(phase(p))&&!/accessor/i.test(p.sub_type||''));
+    ids=(pick.length?pick:base).map(p=>p.id).slice(0,8);S.cmp.sel[S.cmp.cat]=ids}
+  return base.filter(p=>ids.includes(p.id));
+}
+const yes='<span class="cy">✓</span>',no='<span class="cn">—</span>';
+function cmpRows(cols){
+  const fmtD=v=>v?fmtMY(v):'';
+  const R=[];const sec=t=>R.push({sec:t});
+  const row=(label,get,o={})=>R.push({label,get,...o});
+  sec('Overview');
+  row('Supplier',p=>sup(p)?.name||'');row('Status',p=>LC[phase(p)]?.l||'',{html:p=>badge(phase(p))});
+  row('Family',p=>p.family||'');row('Sub-type',p=>p.sub_type||'');row('Markets',p=>(p.markets||[]).join(', '));
+  sec('Pricing');
+  row('List price',p=>p.list_price??null,{num:1,best:'min',html:p=>money(p.list_price,p.currency)});
+  row('Our cost',p=>p.cost??null,{num:1,best:'min',html:p=>money(p.cost,p.currency)});
+  row('Margin',p=>margin(p),{num:1,best:'max',html:p=>margin(p)==null?'':Math.round(margin(p)*100)+'%'});
+  row('Price basis',p=>p.price_basis||'');
+  sec('I/O');
+  row('Inputs',p=>p.inputs??null,{num:1,best:'max'});row('Outputs',p=>p.outputs??null,{num:1,best:'max'});
+  row('Total I/O',p=>totalIO(p),{num:1,best:'max'});
+  row('CAN ports',p=>p.can_ports??null,{num:1,best:'max'});row('Ethernet ports',p=>p.ethernet_ports??null,{num:1,best:'max'});
+  sec('Interfaces');
+  [...new Set([...IFACES,...cols.flatMap(p=>p.interfaces||[])])].forEach(x=>row(x,p=>(p.interfaces||[]).includes(x),{bool:1}));
+  sec('CAN protocols');
+  [...new Set([...CANP,...cols.flatMap(p=>p.can_protocols||[])])].forEach(x=>row(x,p=>(p.can_protocols||[]).includes(x),{bool:1}));
+  sec('Software & safety');
+  row('Software',p=>p.software_platform||'');row('Functional safety',p=>p.functional_safety||'');
+  row('openSYDE',p=>!!p.opensyde_compatible,{bool:1,noGap:1});row('Beacon',p=>!!p.beacon_compatible,{bool:1,noGap:1});
+  sec('Physical');
+  row('Dimensions (mm)',p=>[p.length_mm,p.width_mm,p.height_mm].some(v=>v!=null)?`${p.length_mm??'?'} × ${p.width_mm??'?'} × ${p.height_mm??'?'}`:'');
+  row('Weight (g)',p=>p.weight_g??null,{num:1});row('IP rating',p=>p.ip_rating||'');row('Connectors',p=>p.connector||'');row('Mounting',p=>p.mounting||'');
+  sec('Lifecycle');
+  row('Supplier release',p=>fmtD(p.supplier_release_date));row('NRND',p=>fmtD(p.nrnd_date));row('Last-time buy',p=>fmtD(p.ltb_date));row('End of life',p=>fmtD(p.eol_date));
+  row('Successor',p=>S.data.transitions.filter(t=>t.from_product_id===p.id).map(t=>pnOf(t.to_product_id)).join(', '));
+  const sk=[...new Set(cols.flatMap(p=>Object.keys(p.specs||{})))].filter(k=>k!=='Notes');
+  if(sk.length){sec('Datasheet specs');sk.forEach(k=>row(k,p=>(p.specs||{})[k]??''))}
+  return R;
+}
+function viewCompare(){
+  const cats=CATEGORIES.filter(([k])=>S.data.products.some(p=>p.category===k));
+  if(!cats.some(c=>c[0]===S.cmp.cat))S.cmp.cat=cats[0]?.[0];
+  return`<div class="cmphead">
+    <div class="chips wrap">${cats.map(([k,l])=>`<button class="chip ${S.cmp.cat===k?'on':''}" data-act="cmpcat" data-arg="${k}">${l} <span class="cnt">${S.data.products.filter(p=>p.category===k).length}</span></button>`).join('')}</div>
+  </div><div id="cmpres">${compareResults()}</div>`;
+}
+function compareResults(){
+  const base=cmpBase(),cols=cmpSel(),ids=new Set(cols.map(p=>p.id));
+  const picker=`<div class="card cmppick"><div class="fsh">Products to compare <span><button class="btn ghost sm" data-act="cmpall">All</button><button class="btn ghost sm" data-act="cmpnone">None</button></span></div>
+    <div class="chips wrap">${base.map(p=>`<button class="chip fchip ${ids.has(p.id)?'on':''}" data-act="cmpsel" data-id="${p.id}"><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:8px;height:8px"></i>${esc(p.part_number)}${['eol','rejected'].includes(phase(p))?' <span class="cnt">EOL</span>':''}</button>`).join('')}</div></div>`;
+  if(cols.length<1)return picker+'<div class="card empty">Pick at least one product to compare.</div>';
+  const R=cmpRows(cols);let body='',cur=null,secRows=[];
+  const flush=()=>{if(cur&&secRows.length)body+=`<tr class="csec"><td colspan="${cols.length+2}">${esc(cur)}</td></tr>`+secRows.join('');secRows=[]};
+  R.forEach(r=>{
+    if(r.sec){flush();cur=r.sec;return}
+    const vals=cols.map(p=>r.get(p));
+    if(r.bool){
+      const n=vals.filter(Boolean).length;
+      if(n===0&&(r.noGap||!S.cmp.gaps))return;
+      if(S.cmp.diff&&(n===cols.length||n===0)&&cols.length>1)return;
+      const gap=n===0;
+      secRows.push(`<tr class="${gap?'gap':''}"><th>${esc(r.label)}</th>${vals.map(v=>`<td class="c">${v?yes:no}</td>`).join('')}<td class="cov ${gap?'g0':n<cols.length?'gp':''}">${gap?'Gap':`${n}/${cols.length}`}</td></tr>`);
+      return;
+    }
+    const str=vals.map(v=>v==null?'':String(v));
+    if(str.every(v=>v===''))return;
+    if(S.cmp.diff&&cols.length>1&&str.every(v=>v===str[0]))return;
+    let best=null;
+    if(r.best){const nums=vals.filter(v=>typeof v==='number');if(nums.length>1){const b=r.best==='max'?Math.max(...nums):Math.min(...nums);if(nums.some(v=>v!==b))best=b}}
+    const filled=str.filter(Boolean).length;
+    secRows.push(`<tr><th>${esc(r.label)}</th>${cols.map((p,i)=>{const v=vals[i];const h=r.html?r.html(p):(v==null||v===''?'':esc(v));return`<td class="${best!=null&&v===best?'best':''}">${h||'<span class="cn">—</span>'}</td>`}).join('')}<td class="cov ${filled<cols.length?'gp':''}">${filled}/${cols.length}</td></tr>`);
+  });
+  flush();
+  const head=`<tr><th class="corner">${cols.length} of ${base.length}</th>${cols.map(p=>`<th class="ph" data-act="product" data-id="${p.id}"><div class="pn"><i class="dot" style="background:${esc(sup(p)?.color||'#999')};width:7px;height:7px"></i> ${esc(p.part_number)}</div><div>${badge(phase(p))}</div></th>`).join('')}<th class="cov">Coverage</th></tr>`;
+  const opts=`<div class="cmpopts">
+    <label class="tg"><input type="checkbox" data-change="cmpopt" data-arg="diff" ${S.cmp.diff?'checked':''}> Differences only</label>
+    <label class="tg"><input type="checkbox" data-change="cmpopt" data-arg="gaps" ${S.cmp.gaps?'checked':''}> Show gaps <span class="mut">(features none of these have)</span></label></div>`;
+  return picker+opts+`<div class="cmpw"><table class="ctab"><thead>${head}</thead><tbody>${body}</tbody></table></div>`+valueChart(cols);
+}
+/* value vs capability scatter */
+function valueChart(cols){
+  const M={io:['Total I/O',p=>totalIO(p)],feat:['Interfaces + CAN protocols',p=>(p.interfaces||[]).length+(p.can_protocols||[]).length],can:['CAN ports',p=>p.can_ports]};
+  const PB={list:['List price',p=>p.list_price],cost:['Our cost',p=>p.cost]};
+  const [ml,mf]=M[S.cmp.metric]||M.io,[pl,pf]=PB[S.cmp.priceBy]||PB.list;
+  const pts=cols.map(p=>({p,x:pf(p),y:mf(p)})).filter(o=>o.x!=null&&o.x!==''&&o.y!=null);
+  const ctl=`<div class="row" style="gap:8px;flex-wrap:wrap"><div class="segc" style="margin:0">${Object.entries(PB).map(([k,[l]])=>`<button class="${(S.cmp.priceBy||'list')===k?'on':''}" data-act="cmpprice" data-arg="${k}">${l}</button>`).join('')}</div>
+    <span class="mut">vs</span><div class="segc" style="margin:0">${Object.entries(M).map(([k,[l]])=>`<button class="${(S.cmp.metric||'io')===k?'on':''}" data-act="cmpmetric" data-arg="${k}">${l}</button>`).join('')}</div></div>`;
+  const missing=cols.filter(p=>pf(p)==null).length;
+  let svg;
+  if(pts.length<2){svg=`<div class="empty" style="padding:22px">Add ${pl.toLowerCase()} and ${ml.toLowerCase()} to at least two of these products to see value vs capability.<br><span class="mut">${missing} of ${cols.length} have no ${pl.toLowerCase()} yet — open a product → Edit → Pricing.</span></div>`}
+  else{
+    const W=640,H=300,L=56,B=40,T=16,Rr=16,xs=pts.map(o=>+o.x),ys=pts.map(o=>+o.y);
+    const nice=m=>{const raw=Math.max(m,1)/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,2,2.5,5,10].find(k=>k*mag>=raw)*mag;return[st,Math.ceil(m*1.05/st)*st||st]};
+    const [xs_,x1]=nice(Math.max(...xs)),[ys_,y1]=nice(Math.max(...ys)),x0=0,y0=0;
+    const X=v=>L+(v-x0)/(x1-x0)*(W-L-Rr),Y=v=>H-B-(v-y0)/(y1-y0)*(H-B-T);
+    const tick=(a,b,st)=>Array.from({length:Math.round((b-a)/st)+1},(_,i)=>a+st*i);
+    const cur=pts[0].p.currency;
+    let g=tick(x0,x1,xs_).map(v=>`<line x1="${X(v)}" y1="${T}" x2="${X(v)}" y2="${H-B}" class="gl"/><text x="${X(v)}" y="${H-B+16}" text-anchor="middle" class="tk">${money(Math.round(v),cur)}</text>`).join('')
+      +tick(y0,y1,ys_).map(v=>`<line x1="${L}" y1="${Y(v)}" x2="${W-Rr}" y2="${Y(v)}" class="gl"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end" class="tk">${+v.toFixed(2)}</text>`).join('');
+    // value line: capability per unit price, through the origin at the median ratio
+    const ratios=pts.map(o=>o.y/o.x).sort((a,b)=>a-b),med=ratios[Math.floor(ratios.length/2)];
+    g+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(x1)}" y2="${Y(Math.min(y1,med*x1))}" class="vl"/>`;
+    g+=pts.map(o=>`<g data-act="product" data-id="${o.p.id}" class="pt"><circle cx="${X(o.x)}" cy="${Y(o.y)}" r="6" fill="${esc(sup(o.p)?.color||'#2563eb')}"/><text x="${X(o.x)+9}" y="${Y(o.y)-8}" class="pl">${esc(o.p.part_number)}</text></g>`).join('');
+    svg=`<svg viewBox="0 0 ${W} ${H}" class="vchart" role="img" aria-label="${esc(ml)} versus ${esc(pl)}">${g}
+      <text x="${(L+W-Rr)/2}" y="${H-4}" text-anchor="middle" class="ax">${esc(pl)}</text>
+      <text transform="translate(14 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle" class="ax">${esc(ml)}</text></svg>
+      <div class="mut" style="font-size:12px">Above the dashed line = more ${esc(ml)} per ${cur} than the middle of this group (better value); below = less.${missing?` ${missing} selected product${missing>1?'s have':' has'} no ${pl.toLowerCase()} yet, so ${missing>1?'they are':'it is'} not shown.`:''}</div>`;
+  }
+  return`<div class="sec"><h2>Value vs capability</h2></div><div class="card">${ctl}${svg}</div>`;
+}
+function refreshCompare(){const r=$('#cmpres');if(r)r.innerHTML=compareResults();saveView()}
+
 /* Transitions tab */
 function cpsFor(t){return S.data.customer_products.filter(c=>c.transition_id===t.id||(c.product_id===t.from_product_id&&!c.transition_id))}
 function trCard(t){
@@ -731,6 +893,7 @@ function renderSheet(){
   el.innerHTML=`<div class="sheet-bg ${anim}" data-act="closeall"></div><div class="sheet ${anim}"><div class="sheet-h"><div><button class="btn ghost" data-act="back">${S.stack.length>1?'‹ Back':'Close'}</button></div><h3>${esc(r.title)}</h3><div style="text-align:right">${r.right||''}</div></div><div class="sheet-b">${r.body}</div></div>`;
   document.body.classList.add('noscroll');
 }
+const chipsKV=(l,a)=>`<div style="grid-column:1/-1"><span>${l}</span>${(a||[]).length?`<div class="chips wrap" style="margin-top:4px">${a.map(x=>`<span class="chip on" style="font-size:12.5px;padding:4px 10px">${esc(x)}</span>`).join('')}</div>`:'<b>—</b>'}</div>`;
 const kvItem=(l,v,sub)=>`<div><span>${l}</span><b>${v||'—'}</b>${sub?`<small>${sub}</small>`:''}</div>`;
 const SHEETS={
  product(e){
@@ -751,9 +914,11 @@ const SHEETS={
    <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
     ${dateRows.map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
    <div class="sec"><h2>Fit · form · function</h2></div><div class="card kv">
-    ${kvItem('Software',esc(p.software_platform))}${kvItem('Functional safety',esc(p.functional_safety))}<div style="grid-column:1/-1"><span>CAN protocols</span>${(p.can_protocols||[]).length?`<div class="chips wrap" style="margin-top:4px">${p.can_protocols.map(x=>`<span class="chip on" style="font-size:12.5px;padding:4px 10px">${esc(x)}</span>`).join('')}</div>`:'<b>—</b>'}</div>${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}
+    ${kvItem('Software',esc(p.software_platform))}${kvItem('Functional safety',esc(p.functional_safety))}${chipsKV('CAN protocols',p.can_protocols)}${chipsKV('Interfaces',p.interfaces)}${[p.inputs,p.outputs,p.can_ports,p.ethernet_ports].some(v=>v!=null)?kvItem('Inputs / outputs',`${p.inputs??'—'} in · ${p.outputs??'—'} out`,totalIO(p)!=null?`${totalIO(p)} total I/O`:'')+kvItem('CAN / Ethernet ports',`${p.can_ports??'—'} CAN · ${p.ethernet_ports??'—'} Eth`):''}${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}
     ${p.opensyde_compatible||p.beacon_compatible?kvItem('Compatible with',[p.opensyde_compatible&&'openSYDE',p.beacon_compatible&&'Beacon'].filter(Boolean).join(', ')):''}</div>
    ${p.markets?.length?`<div class="chips wrap" style="margin-top:4px">${p.markets.map(m=>`<span class="chip">${esc(m)}</span>`).join('')}</div>`:''}
+   ${p.list_price!=null||p.cost!=null?`<div class="sec"><h2>Pricing</h2>${p.price_date?`<span class="mut">as of ${fmt(p.price_date)}</span>`:''}</div><div class="card kv">${kvItem('List price',money(p.list_price,p.currency),p.price_basis?esc(p.price_basis):'')}${kvItem('Our cost',money(p.cost,p.currency))}${margin(p)!=null?kvItem('Margin',Math.round(margin(p)*100)+'%',money(p.list_price-p.cost,p.currency)+' per unit'):''}</div>`:''}
+   <button class="btn sm" data-act="cmpgo" data-id="${p.id}" style="margin-top:12px">⇆ Compare with other ${esc((CATEGORIES.find(c=>c[0]===p.category)||[,'products'])[1].toLowerCase())}</button>
    ${spec.length?`<details class="card" style="margin-top:10px"><summary style="font-weight:600;cursor:pointer">Datasheet specs (${spec.length})</summary><table class="cmp" style="margin-top:8px">${spec.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></details>`:''}
    ${p.product_url||p.datasheet_url?`<p class="row" style="gap:16px">${p.product_url?`<a href="${esc(p.product_url)}" target="_blank" rel="noopener">Product page ↗</a>`:''}${p.datasheet_url?`<a href="${esc(p.datasheet_url)}" target="_blank" rel="noopener">Datasheet ↗</a>`:''}</p>`:''}
    ${p.notes?`<div class="card" style="margin-top:10px;white-space:pre-wrap">${esc(p.notes)}</div>`:''}
@@ -770,12 +935,13 @@ const SHEETS={
  transition(e){
   const t=byId('transitions',e.id);if(!t)return null;
   const a=byId('products',t.from_product_id),b=byId('products',t.to_product_id);if(!a||!b)return null;
-  const CMP=[['software_platform','Software'],['can_protocols','CAN protocols'],['connector','Connectors'],['length_mm','Length mm'],['width_mm','Width mm'],['height_mm','Height mm'],['weight_g','Weight g'],['mounting','Mounting'],['ip_rating','IP rating']];
+  const CMP=[['software_platform','Software'],['can_protocols','CAN protocols'],['interfaces','Interfaces'],['inputs','Inputs'],['outputs','Outputs'],['can_ports','CAN ports'],['ethernet_ports','Ethernet ports'],['list_price','List price'],['connector','Connectors'],['length_mm','Length mm'],['width_mm','Width mm'],['height_mm','Height mm'],['weight_g','Weight g'],['mounting','Mounting'],['ip_rating','IP rating']];
   const sk=[...new Set([...Object.keys(a.specs||{}),...Object.keys(b.specs||{})])].filter(k=>!['Notes','Generation'].includes(k));
   const arr=v=>Array.isArray(v)?(v.length?v.join(', '):null):v;
-  const lostCan=(a.can_protocols||[]).filter(x=>!(b.can_protocols||[]).includes(x));
+  const lostCan=(a.can_protocols||[]).filter(x=>!(b.can_protocols||[]).includes(x)),lostIf=(a.interfaces||[]).filter(x=>!(b.interfaces||[]).includes(x));
   const vals=[...CMP.map(([k,l])=>[l,arr(a[k]),arr(b[k])]),...sk.map(k=>[k,(a.specs||{})[k],(b.specs||{})[k]])].filter(([,x,y])=>x!=null||y!=null);
   const rows=vals.map(([l,x,y])=>{const chg=String(x??'')!==String(y??'');let dl='';if(typeof x==='number'&&typeof y==='number'&&x!==y)dl=` <b style="color:var(--warn)">(${y-x>0?'+':''}${+(y-x).toFixed(2)})</b>`;
+    if(l==='Interfaces'&&lostIf.length)dl=` <b style="color:var(--bad)">(drops ${esc(lostIf.join(', '))})</b>`;
     if(l==='CAN protocols'&&lostCan.length)dl=` <b style="color:var(--bad)">(drops ${esc(lostCan.join(', '))})</b>`;return`<tr class="${chg?'chg':''}"><td>${l}</td><td>${esc(x??'—')}</td><td>${esc(y??'—')}${dl}</td></tr>`}).join('');
   const cps=cpsFor(t),done=cps.filter(c=>['released','complete'].includes(c.transition_status)).length;
   const imp=(lab,k,n)=>`<div class="impact"><div class="t">${lab}</div><div style="flex:1"><span class="pill" style="--c:${IMPACT[t[k]]?.c}">${IMPACT[t[k]]?.l}</span>${t[n]?`<div style="margin-top:5px;white-space:pre-wrap">${esc(t[n])}</div>`:''}</div></div>`;
@@ -837,6 +1003,12 @@ const A={
  sidecol:()=>{hovHide();S.sideCol=true;$('.split')?.classList.add('collapsed');saveView()},
  sideexp:(id,arg)=>{S.sideCol=false;$('.split')?.classList.remove('collapsed');saveView();if(arg==='search')setTimeout(()=>$('#q')?.focus(),60)},
  fq:()=>{S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
+ cmpcat:(id,k)=>{S.cmp.cat=k;saveView();renderMain()},
+ cmpsel:id=>{cmpSel();const L=S.cmp.sel[S.cmp.cat],i=L.indexOf(id);if(i>=0)L.splice(i,1);else L.push(id);refreshCompare()},
+ cmpall:()=>{S.cmp.sel[S.cmp.cat]=cmpBase().map(p=>p.id);refreshCompare()},
+ cmpnone:()=>{S.cmp.sel[S.cmp.cat]=[];refreshCompare()},
+ cmpmetric:(id,k)=>{S.cmp.metric=k;refreshCompare()},cmpprice:(id,k)=>{S.cmp.priceBy=k;refreshCompare()},
+ cmpgo:id=>{const p=byId('products',id);if(!p)return;S.cmp.cat=p.category;cmpSel();const L=S.cmp.sel[p.category];if(!L.includes(id))L.unshift(id);S.tab='compare';S.stack=[];saveView();renderAll();window.scrollTo(0,0)},
  fclrall:()=>{FGROUPS.forEach(g=>S.F[g.k]=[]);S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
  ftoggle:(id,arg,el)=>{S.fOpen=!S.fOpen;$('#fbody')?.classList.toggle('open',S.fOpen);el.setAttribute('aria-expanded',S.fOpen)},
  zoom:(id,arg)=>{if(arg==='today')return zoomToday();setZoom(S.mw*(arg==='in'?1.4:1/1.4))},
@@ -852,6 +1024,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(
 document.addEventListener('change',async e=>{
   const t=e.target;
   if(t.type==='checkbox'&&t.closest('label.chip'))t.closest('label.chip').classList.toggle('on',t.checked);
+  if(t.dataset.change==='cmpopt'){S.cmp[t.dataset.arg]=t.checked;refreshCompare();return}
   if(t.dataset.change==='mig'){try{await save('customer_products',{id:t.dataset.id,transition_status:t.value});t.style.borderLeftColor=MIGC[t.value];toast('Status updated');renderMain()}catch(err){toast(errMsg(err))}}
 });
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.F.q=e.target.value;clearTimeout(refreshResults.t);refreshResults.t=setTimeout(refreshResults,120)}});
