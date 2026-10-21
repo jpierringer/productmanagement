@@ -206,6 +206,26 @@ a{color:var(--acc)}
   .ctab thead th{min-width:104px}
   .ctab thead th.corner{min-width:92px;max-width:108px}
 }
+/* timeline / list switch + desktop table */
+.vbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+.vsw{margin:0;min-width:220px}
+.vsw button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.vadd{margin-left:auto;display:none}
+.lsum{margin:4px 2px 8px;font-size:12.5px}
+.ltw{overflow:auto;max-height:calc(100vh - 290px);border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+.ltab{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.ltab th{position:sticky;top:0;z-index:2;background:var(--card);text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:10px;border-bottom:2px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+.ltab th:hover,.ltab th.on{color:var(--acc)}
+.ltab td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ltab tbody tr{cursor:pointer}.ltab tbody tr:hover td{background:color-mix(in srgb,var(--acc) 6%,var(--card))}
+.ltab td:first-child{max-width:220px;min-width:170px}
+.ltab td.sup{max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.ltab th,.ltab td{padding-left:8px;padding-right:8px}.ltab .r{text-align:right}.ltab .nw{white-space:nowrap}
+.ltab .cn{color:var(--line);font-weight:700}
+.ltab .soon{color:var(--warn);font-weight:700}
+.meter{display:inline-block;width:42px;height:6px;border-radius:3px;background:var(--line);vertical-align:middle;overflow:hidden;margin-right:4px}
+.meter i{display:block;height:100%}
+.miss{font-size:11.5px;color:var(--warn);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* collapsible filter panel */
 .shead,.srail{display:none}
 .fpills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:12.5px}
@@ -245,6 +265,8 @@ a{color:var(--acc)}
   .glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px;align-items:start}
   .glist>.li,.glist>.card{margin:0}
   .narrow{max-width:900px}
+  .vadd{display:inline-block}
+  body.wide .fab[data-arg=products]{display:none}
   .cmpw{max-height:calc(100vh - 260px)}
   .sheet{left:auto;right:0;top:0;width:min(620px,100vw);max-width:none;border-radius:0;box-shadow:-10px 0 34px rgba(2,6,23,.18)}
   .sheet.anim{animation:slide .24s ease-out}
@@ -301,9 +323,9 @@ const PHG_OF={evaluating:'pipeline',onboarding:'pipeline',active:'active',nrnd:'
 
 /* ---------- state ---------- */
 const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
-  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[],cmp:{cat:'controller',sel:{},diff:false,gaps:true,metric:'io',priceBy:'list'}};
-try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true;if(v.cmp)Object.assign(S.cmp,v.cmp)}}catch(e){}
-function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol,cmp:S.cmp}))}catch(e){}}
+  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[],cmp:{cat:'controller',sel:{},diff:false,gaps:true,metric:'io',priceBy:'list'},rmView:'timeline',lsort:{k:'part',dir:1},incOnly:false};
+try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true;if(v.cmp)Object.assign(S.cmp,v.cmp);if(v.rmView)S.rmView=v.rmView;if(v.lsort)S.lsort=v.lsort;S.incOnly=!!v.incOnly}}catch(e){}
+function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol,cmp:S.cmp,rmView:S.rmView,lsort:S.lsort,incOnly:S.incOnly}))}catch(e){}}
 TABLES.forEach(t=>S.data[t]=[]);
 
 /* ---------- helpers ---------- */
@@ -511,7 +533,7 @@ const ICONS={compare:'<rect x="3.5" y="4" width="7" height="16" rx="1.6"/><rect 
  transitions:'<path d="M4 8h14l-4-4M20 16H6l4 4"/>',
  customers:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.4M18 14.8c1.6.7 2.7 2.4 3 5.2"/>',
  more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'};
-const TITLES={roadmap:'Roadmap',products:'Products',compare:'Compare',transitions:'Transitions',customers:'Customers',more:'More'};
+const TITLES={roadmap:'Roadmap',compare:'Compare',transitions:'Transitions',customers:'Customers',more:'More'};
 const fab=(table,def)=>canEdit()?`<button class="fab" data-act="new" data-arg="${table}" ${def?`data-def="${esc(JSON.stringify(def))}"`:''} aria-label="Add">+</button>`:'';
 
 function renderAll(){
@@ -586,7 +608,7 @@ function refreshResults(){hovHide();
   const fb=$('#fbody');if(fb)fb.innerHTML=filterBody();
   const tg=$('.ftoggle');if(tg){const n=FGROUPS.reduce((a,g)=>a+S.F[g.k].length,0);tg.textContent='Filters'+(n?` · ${n}`:'');tg.classList.toggle('has',!!n)}
   const sb=$('.sbadge');if(sb){const n=activeCount();sb.textContent=n;sb.hidden=!n}
-  const r=$('#results');if(r)r.innerHTML=(S.tab==='roadmap'?roadmapResults:productResults)();
+  const r=$('#results');if(r)r.innerHTML=roadmapResults();
   restoreTl();saveView();
 }
 
@@ -594,17 +616,26 @@ function refreshResults(){hovHide();
 function stat(n,l,c,arg){return`<div class="stat" style="--c:${c}" data-act="statgo" data-arg="${arg}"><b>${n}</b><span>${l}</span></div>`}
 function viewRoadmap(){
   const banners=`${tempPw()?`<div class="banner" data-act="gopw">🔑 You're using a temporary password. <b style="text-decoration:underline">Set your own</b></div>`:''}${S.mode==='demo'?`<div class="banner">You're viewing sample data on this device. Connect Supabase on the <b data-act="tab" data-arg="more" style="text-decoration:underline">More</b> tab to share with your team.</div>`:''}`;
-  return splitView(roadmapResults,banners);
+  return splitView(roadmapResults,banners)+fab('products');
 }
 function roadmapResults(){
   const ps=filtered(),ids=new Set(ps.map(p=>p.id)),cnt=ks=>ps.filter(p=>ks.includes(phase(p))).length;
   const mig=S.data.customer_products.filter(c=>ids.has(c.product_id)&&needsMig(c)).length;
   S.rows=ps;
-  const up=upcoming(12,ids).slice(0,10);
-  const zl=S.mw>=36?'Months':S.mw>=9?'Quarters':'Years';
   return`${filterPills()}<div class="stats">${stat(cnt(['active']),'Active','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
   ${stat(cnt(['nrnd','ltb']),'Phasing out','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
-  <div class="tlbar"><div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
+  ${viewSwitch()}${S.rmView==='list'?listSection(ps):timelineSection(ps,ids)}`;
+}
+function viewSwitch(){
+  const list=S.rmView==='list',inc=S.incOnly;
+  return`<div class="vbar"><div class="segc vsw"><button class="${list?'':'on'}" data-act="rmview" data-arg="timeline">${ICO_TL} Timeline</button><button class="${list?'on':''}" data-act="rmview" data-arg="list">${ICO_LIST} List</button></div>
+    ${list?`<label class="tg"><input type="checkbox" data-change="incOnly" ${inc?'checked':''}> Incomplete only</label><button class="btn sm" data-act="csv">⬇ CSV</button>`:''}
+    ${canEdit()?`<button class="btn sm pri vadd" data-act="new" data-arg="products">+ Product</button>`:''}</div>`;
+}
+function timelineSection(ps,ids){
+  const up=upcoming(12,ids).slice(0,10);
+  const zl=S.mw>=36?'Months':S.mw>=9?'Quarters':'Years';
+  return`<div class="tlbar"><div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
     <div class="zoom"><button class="btn sm" data-act="zoom" data-arg="out" aria-label="Zoom out">−</button><span class="mut zl">${zl}</span><button class="btn sm" data-act="zoom" data-arg="in" aria-label="Zoom in">+</button><button class="btn sm" data-act="zoom" data-arg="today">Today</button></div></div>
   ${ps.length?timeline(ps):'<div class="card empty">No products match these filters.</div>'}
   <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#16a34a;opacity:.22"></i>Faded = no dates yet (current status only)</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span><i style="background:var(--card);border:2.5px solid #2563eb;width:8px;height:8px;transform:rotate(45deg);border-radius:2px"></i>Event (tap)</span><span style="color:var(--acc);font-weight:600">→ successor</span><span class="ztip">${'ontouchstart' in window?'Pinch to zoom':'Ctrl/⌘ + scroll to zoom'}</span></div>
@@ -705,7 +736,64 @@ function setZoom(mw,clientX){hovHide();
 function zoomToday(){const tl=$('.tl');if(tl)tl.scrollTo({left:Math.max(0,S.tlToday-(tl.clientWidth-LW)*0.3),behavior:'smooth'})}
 
 /* ---------- Products tab ---------- */
-function viewProducts(){return splitView(productResults)+fab('products')}
+function viewProducts(){S.tab='roadmap';S.rmView='list';return viewRoadmap()}
+const ICO_TL='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M8 12h12M4 17h8"/></svg>';
+const ICO_LIST='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>';
+/* what a product record should have, depending on its category / status */
+function completeness(p){
+  const sw=p.category==='software',ph=phase(p),c=[];
+  c.push(['Lifecycle dates',['supplier_release_date','onboard_date','nrnd_date','ltb_date','eol_date'].some(k=>p[k])]);
+  c.push(['Markets',(p.markets||[]).length>0]);
+  c.push(['Price',p.list_price!=null]);
+  if(!sw)c.push(['Interfaces',(p.interfaces||[]).length>0]);
+  if(['controller','module'].includes(p.category))c.push(['I/O counts',p.inputs!=null||p.outputs!=null]);
+  if(!sw)c.push(['Dimensions',p.length_mm!=null]);
+  if(['nrnd','ltb','eol'].includes(ph))c.push(['Successor',S.data.transitions.some(t=>t.from_product_id===p.id)]);
+  const done=c.filter(x=>x[1]).length;
+  return{done,total:c.length,ratio:c.length?done/c.length:1,missing:c.filter(x=>!x[1]).map(x=>x[0])};
+}
+const LCOLS=[
+  ['part','Product',p=>p.part_number.toLowerCase()],
+  ['sup','Supplier',p=>(sup(p)?.name||'').toLowerCase()],
+  ['status','Status',p=>['evaluating','onboarding','active','nrnd','ltb','eol','rejected'].indexOf(phase(p))],
+  ['rel','Release',p=>p.supplier_release_date||p.onboard_date||null],
+  ['nrnd','NRND',p=>p.nrnd_date||null],['ltb','LTB',p=>p.ltb_date||null],['eol','EOL',p=>p.eol_date||null],
+  ['price','List price',p=>p.list_price??null],
+  ['io','I/O',p=>totalIO(p)],
+  ['if','Intf.',p=>(p.interfaces||[]).length||null],
+  ['comp','Complete',p=>completeness(p).ratio]];
+function listRows(ps){
+  let L=ps.slice();if(S.incOnly)L=L.filter(p=>completeness(p).ratio<1);
+  const col=LCOLS.find(c=>c[0]===S.lsort.k)||LCOLS[0],dir=S.lsort.dir;
+  return L.sort((a,b)=>{const x=col[2](a),y=col[2](b);if(x==null&&y==null)return a.part_number.localeCompare(b.part_number);if(x==null)return 1;if(y==null)return-1;
+    return(x<y?-1:x>y?1:a.part_number.localeCompare(b.part_number))*dir});
+}
+function listSection(ps){
+  const L=listRows(ps);
+  if(!L.length)return'<div class="card empty">No products match these filters.</div>';
+  if(!wide())return`<div class="glist">${L.map(productItem).join('')}</div>`;
+  const th=LCOLS.map(([k,l])=>`<th class="${S.lsort.k===k?'on':''} ${['price','io','if','comp'].includes(k)?'r':''}" data-act="lsort" data-arg="${k}">${l}${S.lsort.k===k?(S.lsort.dir>0?' ▲':' ▼'):''}</th>`).join('');
+  const dt=(v,warn)=>v?`<span class="${warn&&d(v)>=today&&daysUntil(v)<180?'soon':''}">${fmtMY(v)}</span>`:'<span class="cn">—</span>';
+  const rows=L.map(p=>{const c=completeness(p),s=sup(p);
+    return`<tr data-act="product" data-id="${p.id}">
+      <td><b>${esc(p.part_number)}</b><div class="mut ell">${esc(CATS1[p.category]||'')} · ${esc(p.name)}</div>${c.missing.length?`<div class="miss">Missing: ${esc(c.missing.join(', '))}</div>`:''}</td>
+      <td class="nw sup" title="${esc(s?.name||'')}"><i class="dot" style="background:${esc(s?.color||'#999')};width:8px;height:8px"></i> ${esc(s?.name||'')}</td>
+      <td>${badge(phase(p))}</td>
+      <td class="nw">${dt(p.supplier_release_date||p.onboard_date)}</td><td class="nw">${dt(p.nrnd_date)}</td><td class="nw">${dt(p.ltb_date,1)}</td><td class="nw">${dt(p.eol_date,1)}</td>
+      <td class="r nw">${p.list_price!=null?money(p.list_price,p.currency):'<span class="cn">—</span>'}</td>
+      <td class="r">${totalIO(p)??'<span class="cn">—</span>'}</td>
+      <td class="r" title="${esc((p.interfaces||[]).join(', '))}">${(p.interfaces||[]).length||'<span class="cn">—</span>'}</td>
+      <td class="r nw" title="${c.missing.length?'Missing: '+esc(c.missing.join(', ')):'Complete'}"><span class="meter"><i style="width:${Math.round(c.ratio*100)}%;background:${c.ratio===1?'var(--ok)':c.ratio>=.5?'var(--warn)':'var(--bad)'}"></i></span> ${c.done}/${c.total}</td></tr>`}).join('');
+  const inc=ps.filter(p=>completeness(p).ratio<1).length;
+  return`<div class="mut lsum">${L.length} product${L.length===1?'':'s'} · ${inc} with missing data · click a column to sort</div><div class="ltw"><table class="ltab"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function exportCSV(){
+  const L=listRows(S.rows),q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const H=['Product ID','Part number','Description','Supplier','Category','Status','Supplier release','Onboard','NRND','LTB','Last ship','EOL','List price','Cost','Currency','Price basis','Inputs','Outputs','CAN ports','Ethernet ports','Interfaces','CAN protocols','Markets','Successor','Missing data'];
+  const rows=L.map(p=>[p.product_code,p.part_number,p.name,sup(p)?.name,CATS1[p.category],LC[phase(p)]?.l,p.supplier_release_date,p.onboard_date,p.nrnd_date,p.ltb_date,p.last_ship_date,p.eol_date,p.list_price,p.cost,p.currency,p.price_basis,p.inputs,p.outputs,p.can_ports,p.ethernet_ports,(p.interfaces||[]).join('; '),(p.can_protocols||[]).join('; '),(p.markets||[]).join('; '),S.data.transitions.filter(t=>t.from_product_id===p.id).map(t=>pnOf(t.to_product_id)).join('; '),completeness(p).missing.join('; ')].map(q).join(','));
+  const b=new Blob(['\ufeff'+[H.join(','),...rows].join('\r\n')],{type:'text/csv'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=`portfolio-${iso(today)}.csv`;document.body.appendChild(a);a.click();a.remove();
+}
 function productResults(){
   const L=filtered().sort((a,b)=>a.part_number.localeCompare(b.part_number));
   return`${filterPills()}<div class="glist">${L.length?L.map(productItem).join(''):'<div class="empty">No products match these filters.</div>'}</div>`;
@@ -1012,7 +1100,10 @@ const A={
  fclrall:()=>{FGROUPS.forEach(g=>S.F[g.k]=[]);S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
  ftoggle:(id,arg,el)=>{S.fOpen=!S.fOpen;$('#fbody')?.classList.toggle('open',S.fOpen);el.setAttribute('aria-expanded',S.fOpen)},
  zoom:(id,arg)=>{if(arg==='today')return zoomToday();setZoom(S.mw*(arg==='in'?1.4:1/1.4))},
- statgo:(id,arg)=>{if(arg==='mig')S.tab='transitions';else{S.F.ph=[arg];S.tab='products';saveView()}S.stack=[];renderAll();window.scrollTo(0,0)},
+ statgo:(id,arg)=>{if(arg==='mig'){S.tab='transitions';S.stack=[];renderAll();window.scrollTo(0,0)}else{S.F.ph=[arg];S.rmView='list';refreshResults();const r=$('#results');r&&r.scrollIntoView({behavior:'smooth',block:'start'})}},
+ rmview:(id,k)=>{S.rmView=k;S.tlScroll=null;refreshResults()},
+ lsort:(id,k)=>{if(S.lsort.k===k)S.lsort.dir*=-1;else S.lsort={k,dir:k==='comp'?1:['price','io','if'].includes(k)?-1:1};refreshResults()},
+ csv:()=>exportCSV(),
  refresh:async()=>{await reload();toast('Up to date')},
  export(){const b=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`roadmap-export-${iso(today)}.json`;document.body.appendChild(a);a.click();a.remove()},
  resetdemo(){if(confirm('Reset the sample data on this device?')){localStorage.removeItem(Demo.key);location.reload()}},
@@ -1024,6 +1115,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(
 document.addEventListener('change',async e=>{
   const t=e.target;
   if(t.type==='checkbox'&&t.closest('label.chip'))t.closest('label.chip').classList.toggle('on',t.checked);
+  if(t.dataset.change==='incOnly'){S.incOnly=t.checked;refreshResults();return}
   if(t.dataset.change==='cmpopt'){S.cmp[t.dataset.arg]=t.checked;refreshCompare();return}
   if(t.dataset.change==='mig'){try{await save('customer_products',{id:t.dataset.id,transition_status:t.value});t.style.borderLeftColor=MIGC[t.value];toast('Status updated');renderMain()}catch(err){toast(errMsg(err))}}
 });
