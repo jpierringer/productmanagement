@@ -456,7 +456,14 @@ const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.n
 const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
 const IMP=[['unknown','Not assessed'],['none','None'],['minor','Minor'],['major','Major']];
 const IFACES=['CAN','Ethernet','Automotive Ethernet (T1)','RS232','RS485','LIN','USB','GMSL2','Wi-Fi','Bluetooth','Cellular (LTE/5G)','GNSS','LoRaWAN','SENT'];
-const ifOpts=()=>[...new Set([...IFACES,...S.data.products.flatMap(p=>p.interfaces||[])])].map(x=>[x,x]);
+const IFG=[['Wired networking',['CAN','Ethernet','Automotive Ethernet (T1)','RS232','RS485','LIN','USB']],
+  ['Wireless',['Wi-Fi','Bluetooth','Cellular (LTE/5G)','GNSS','LoRaWAN']],
+  ['Sensor & video links',['GMSL2','SENT']]];
+const IF_KNOWN=new Set(IFG.flatMap(g=>g[1]));
+// options for one group; values added outside the known lists land in "Other interfaces"
+const ifGroupOpts=name=>name==='Other interfaces'?[...new Set(S.data.products.flatMap(p=>p.interfaces||[]))].filter(x=>!IF_KNOWN.has(x)).map(x=>[x,x]):(IFG.find(g=>g[0]===name)||[,[]])[1].map(x=>[x,x]);
+const ifIn=(p,name)=>(p.interfaces||[]).filter(x=>name==='Other interfaces'?!IF_KNOWN.has(x):(IFG.find(g=>g[0]===name)||[,[]])[1].includes(x));
+const IF_GROUPS=()=>[...IFG.map(g=>g[0]),...(ifGroupOpts('Other interfaces').length?['Other interfaces']:[])];
 const CURR=['USD','EUR','GBP','CAD'];
 function money(v,cur){if(v==null||v==='')return'';try{return new Intl.NumberFormat(undefined,{style:'currency',currency:cur||'USD',maximumFractionDigits:Number(v)%1?2:0}).format(v)}catch(e){return (cur||'')+' '+v}}
 const margin=p=>p.list_price>0&&p.cost!=null?(p.list_price-p.cost)/p.list_price:null;
@@ -477,9 +484,12 @@ const FORMS={
   {h:'Lifecycle dates'},{k:'supplier_release_date',l:'Supplier release',t:'date'},{k:'sample_date',l:'Samples available',t:'date'},{k:'onboard_date',l:'Onboarded by us',t:'date'},
   {k:'nrnd_date',l:'NRND / supplier EOL notice',t:'date'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'last_ship_date',l:'Last ship',t:'date'},
   {k:'end_of_support_date',l:'End of support',t:'date'},{k:'eol_date',l:'End of life (timeline end)',t:'date'},
-  {h:'Fit · form · function'},{k:'software_platform',l:'Software platform / version'},{k:'functional_safety',l:'Functional safety'},{k:'can_protocols',l:'CAN protocols',t:'multi',o:canOpts()},{k:'interfaces',l:'Interfaces',t:'multi',o:ifOpts()},
-  {row:[{k:'inputs',l:'Inputs',t:'number'},{k:'outputs',l:'Outputs',t:'number'},{k:'can_ports',l:'CAN ports',t:'number'}]},{k:'ethernet_ports',l:'Ethernet ports',t:'number'},
-  {k:'connector',l:'Connectors / pinout'},
+  {h:'Software & safety'},{k:'software_platform',l:'Software platform / version'},{k:'functional_safety',l:'Functional safety'},
+  {h:'Connectivity'},{k:'interfaces',l:'Wired networking',t:'multi',o:ifGroupOpts('Wired networking')},{k:'can_protocols',l:'CAN protocols',t:'multi',o:canOpts()},
+  {k:'interfaces',l:'Wireless',t:'multi',o:ifGroupOpts('Wireless')},{k:'interfaces',l:'Sensor & video links',t:'multi',o:ifGroupOpts('Sensor & video links')},
+  ...(ifGroupOpts('Other interfaces').length?[{k:'interfaces',l:'Other interfaces',t:'multi',o:ifGroupOpts('Other interfaces')}]:[]),
+  {h:'I/O'},{row:[{k:'inputs',l:'Inputs',t:'number'},{k:'outputs',l:'Outputs',t:'number'},{k:'can_ports',l:'CAN ports',t:'number'}]},{k:'ethernet_ports',l:'Ethernet ports',t:'number'},
+  {h:'Physical'},{k:'connector',l:'Connectors / pinout'},
   {row:[{k:'length_mm',l:'Length mm',t:'number'},{k:'width_mm',l:'Width mm',t:'number'},{k:'height_mm',l:'Height mm',t:'number'}]},
   {k:'weight_g',l:'Weight (g)',t:'number'},{k:'mounting',l:'Mounting'},{k:'ip_rating',l:'IP rating'},
   {h:'Pricing'},{row:[{k:'list_price',l:'List price',t:'number'},{k:'cost',l:'Our cost',t:'number'},{k:'currency',l:'Currency',t:'select',o:CURR.map(c=>[c,c]),req:1}]},
@@ -837,10 +847,12 @@ function cmpRows(cols){
   row('Inputs',p=>p.inputs??null,{num:1,best:'max'});row('Outputs',p=>p.outputs??null,{num:1,best:'max'});
   row('Total I/O',p=>totalIO(p),{num:1,best:'max'});
   row('CAN ports',p=>p.can_ports??null,{num:1,best:'max'});row('Ethernet ports',p=>p.ethernet_ports??null,{num:1,best:'max'});
-  sec('Interfaces');
-  [...new Set([...IFACES,...cols.flatMap(p=>p.interfaces||[])])].forEach(x=>row(x,p=>(p.interfaces||[]).includes(x),{bool:1}));
+  const ifSec=g=>{const opts=g==='Other interfaces'?[...new Set(cols.flatMap(p=>ifIn(p,g)))]:(IFG.find(x=>x[0]===g)||[,[]])[1];
+    if(!opts.length)return;sec(g);opts.forEach(x=>row(x,p=>(p.interfaces||[]).includes(x),{bool:1}))};
+  ifSec('Wired networking');
   sec('CAN protocols');
   [...new Set([...CANP,...cols.flatMap(p=>p.can_protocols||[])])].forEach(x=>row(x,p=>(p.can_protocols||[]).includes(x),{bool:1}));
+  ifSec('Wireless');ifSec('Sensor & video links');ifSec('Other interfaces');
   sec('Software & safety');
   row('Software',p=>p.software_platform||'');row('Functional safety',p=>p.functional_safety||'');
   row('openSYDE',p=>!!p.opensyde_compatible,{bool:1,noGap:1});row('Beacon',p=>!!p.beacon_compatible,{bool:1,noGap:1});
@@ -1008,8 +1020,12 @@ const SHEETS={
    ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
    <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
     ${dateRows.map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
+   <div class="sec"><h2>Connectivity</h2></div><div class="card kv">${(()=>{const gs=IF_GROUPS().map(g=>[g,ifIn(p,g)]);
+      const order=[gs[0],['CAN protocols',p.can_protocols||[]],...gs.slice(1)];
+      const shown=order.filter(([g,a],i)=>a.length||i<2);
+      return shown.map(([g,a])=>chipsKV(g,a)).join('')})()}</div>
    <div class="sec"><h2>Fit · form · function</h2></div><div class="card kv">
-    ${kvItem('Software',esc(p.software_platform))}${kvItem('Functional safety',esc(p.functional_safety))}${chipsKV('CAN protocols',p.can_protocols)}${chipsKV('Interfaces',p.interfaces)}${[p.inputs,p.outputs,p.can_ports,p.ethernet_ports].some(v=>v!=null)?kvItem('Inputs / outputs',`${p.inputs??'—'} in · ${p.outputs??'—'} out`,totalIO(p)!=null?`${totalIO(p)} total I/O`:'')+kvItem('CAN / Ethernet ports',`${p.can_ports??'—'} CAN · ${p.ethernet_ports??'—'} Eth`):''}${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}
+    ${kvItem('Software',esc(p.software_platform))}${kvItem('Functional safety',esc(p.functional_safety))}${[p.inputs,p.outputs,p.can_ports,p.ethernet_ports].some(v=>v!=null)?kvItem('Inputs / outputs',`${p.inputs??'—'} in · ${p.outputs??'—'} out`,totalIO(p)!=null?`${totalIO(p)} total I/O`:'')+kvItem('CAN / Ethernet ports',`${p.can_ports??'—'} CAN · ${p.ethernet_ports??'—'} Eth`):''}${kvItem('Connectors',esc(p.connector))}${kvItem('Dimensions',dims)}${kvItem('Weight',p.weight_g!=null?p.weight_g+' g':'')}${kvItem('Mounting',esc(p.mounting))}${kvItem('IP rating',esc(p.ip_rating))}
     ${p.opensyde_compatible||p.beacon_compatible?kvItem('Compatible with',[p.opensyde_compatible&&'openSYDE',p.beacon_compatible&&'Beacon'].filter(Boolean).join(', ')):''}</div>
    ${p.markets?.length?`<div class="chips wrap" style="margin-top:4px">${p.markets.map(m=>`<span class="chip">${esc(m)}</span>`).join('')}</div>`:''}
    ${p.list_price!=null||p.cost!=null?`<div class="sec"><h2>Pricing</h2>${p.price_date?`<span class="mut">as of ${fmt(p.price_date)}</span>`:''}</div><div class="card kv">${kvItem('List price',money(p.list_price,p.currency),p.price_basis?esc(p.price_basis):'')}${kvItem('Our cost',money(p.cost,p.currency))}${margin(p)!=null?kvItem('Margin',Math.round(margin(p)*100)+'%',money(p.list_price-p.cost,p.currency)+' per unit'):''}</div>`:''}
