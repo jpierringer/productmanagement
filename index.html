@@ -335,12 +335,12 @@ const CONFIG = { SUPABASE_URL: 'https://sjwarllnehssyphoormc.supabase.co', SUPAB
 
 /* ---------- constants ---------- */
 const LIFECYCLE=[
- {k:'evaluating',l:'Evaluating',c:'#94a3b8'},{k:'onboarding',l:'Onboarding',c:'#8b5cf6'},
+ {k:'development',l:'In development',c:'#0891b2'},{k:'evaluating',l:'Evaluating',c:'#94a3b8'},{k:'onboarding',l:'Onboarding',c:'#8b5cf6'},
  {k:'active',l:'Active',c:'#16a34a'},{k:'nrnd',l:'NRND',c:'#d97706'},
  {k:'ltb',l:'Last-time buy',c:'#ea580c'},{k:'eol',l:'End of life',c:'#dc2626'},
  {k:'rejected',l:'Not onboarded',c:'#6b7280'}];
 const LC=Object.fromEntries(LIFECYCLE.map(x=>[x.k,x]));
-const RANK={evaluating:0,onboarding:1,active:2,nrnd:3,ltb:4,eol:5};
+const RANK={development:-1,evaluating:0,onboarding:1,active:2,nrnd:3,ltb:4,eol:5};
 const CATEGORIES=[['controller','Controllers'],['telematics','Telematics'],['display','Displays'],['module','I/O & modules'],['sensor','Sensors'],['software','Software'],['other','Other']];
 const CATS1={controller:'Controller',telematics:'Telematics',module:'I/O module',sensor:'Sensor',display:'Display',software:'Software',other:'Other'};
 const IMPACT={unknown:{l:'Not assessed',c:'#94a3b8'},none:{l:'None',c:'#16a34a'},minor:{l:'Minor',c:'#d97706'},major:{l:'Major',c:'#dc2626'}};
@@ -356,8 +356,8 @@ const WIDEQ='(min-width:900px), (orientation:landscape) and (min-width:700px)';
 const wide=()=>matchMedia(WIDEQ).matches;
 let LW=118;                       // label column width (wider on desktop)
 const ZMIN=5,ZMAX=120;            // px per month
-const PHG=[['pipeline','Evaluating / onboarding'],['active','Active'],['phasing','Phasing out'],['eol','End of life'],['rejected','Not onboarded']];
-const PHG_OF={evaluating:'pipeline',onboarding:'pipeline',active:'active',nrnd:'phasing',ltb:'phasing',eol:'eol',rejected:'rejected'};
+const PHG=[['dev','In development'],['pipeline','Evaluating / onboarding'],['active','Active'],['phasing','Phasing out'],['eol','End of life'],['rejected','Not onboarded']];
+const PHG_OF={development:'dev',evaluating:'pipeline',onboarding:'pipeline',active:'active',nrnd:'phasing',ltb:'phasing',eol:'eol',rejected:'rejected'};
 
 /* ---------- state ---------- */
 const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
@@ -397,7 +397,7 @@ const basisTag=b=>!b?'':/infer|confirm/i.test(b)?`<span class="pill" style="--c:
 const migBadge=k=>`<span class="badge" style="--c:${MIGC[k]||'#94a3b8'}">${esc((MIG.find(m=>m[0]===k)||[,k])[1])}</span>`;
 function nextMilestone(p){
   for(const[k,l]of[['nrnd_date','NRND'],['ltb_date','LTB'],['eol_date','EOL']]){if(p[k]&&d(p[k])>=today)return{l,date:p[k]}}
-  if(['evaluating','onboarding'].includes(p.lifecycle)){if(p.supplier_release_date&&d(p.supplier_release_date)>=today)return{l:'Release',date:p.supplier_release_date};if(p.onboard_date&&d(p.onboard_date)>=today)return{l:'Onboard',date:p.onboard_date}}
+  if(['development','evaluating','onboarding'].includes(p.lifecycle)){if(p.supplier_release_date&&d(p.supplier_release_date)>=today)return{l:'Release',date:p.supplier_release_date};if(p.onboard_date&&d(p.onboard_date)>=today)return{l:'Onboard',date:p.onboard_date}}
   return null;
 }
 function needsMig(cp){
@@ -740,7 +740,7 @@ function roadmapResults(){
   const ps=filtered(),ids=new Set(ps.map(p=>p.id)),cnt=ks=>ps.filter(p=>ks.includes(phase(p))).length;
   const mig=S.data.customer_products.filter(c=>ids.has(c.product_id)&&needsMig(c)).length;
   S.rows=ps;
-  return`${filterPills()}<div class="stats">${stat(cnt(['active']),'Active','#16a34a','active')}${stat(cnt(['evaluating','onboarding']),'Evaluating / onboarding','#8b5cf6','pipeline')}
+  return`${filterPills()}<div class="stats">${stat(cnt(['active']),'Active','#16a34a','active')}${stat(cnt(['development','evaluating','onboarding']),'In development / evaluating','#8b5cf6','pipeline')}
   ${stat(cnt(['nrnd','ltb']),'Phasing out','#d97706','phasing')}${stat(mig,'Customer migrations open','#dc2626','mig')}</div>
   ${viewSwitch()}${S.rmView==='list'?listSection(ps):timelineSection(ps,ids)}`;
 }
@@ -756,7 +756,7 @@ function timelineSection(ps,ids){
   return`<div class="tlbar"><div class="segc">${[['category','Category'],['supplier','Supplier'],['market','Market']].map(([k,l])=>`<button class="${S.f.group===k?'on':''}" data-act="group" data-arg="${k}">${l}</button>`).join('')}</div>
     <div class="zoom"><button class="btn sm" data-act="zoom" data-arg="out" aria-label="Zoom out">−</button><span class="mut zl">${zl}</span><button class="btn sm" data-act="zoom" data-arg="in" aria-label="Zoom in">+</button><button class="btn sm" data-act="zoom" data-arg="today">Today</button></div></div>
   ${ps.length?timeline(ps):'<div class="card empty">No products match these filters.</div>'}
-  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Evaluating</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#16a34a;opacity:.22"></i>Faded = no dates yet (current status only)</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span><i style="background:var(--card);border:2.5px solid #2563eb;width:8px;height:8px;transform:rotate(45deg);border-radius:2px"></i>Event (tap)</span><span style="color:var(--acc);font-weight:600">→ successor</span><span class="ztip">${'ontouchstart' in window?'Pinch to zoom':'Ctrl/⌘ + scroll to zoom'}</span></div>
+  <div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#0891b2 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #0891b2"></i>In development</span><span><i style="background:repeating-linear-gradient(135deg,#94a3b8 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #94a3b8"></i>Evaluating</span><span><i style="background:repeating-linear-gradient(135deg,#8b5cf6 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #8b5cf6"></i>Onboarding</span><span><i style="background:#16a34a"></i>Active</span><span><i style="background:#16a34a;opacity:.22"></i>Faded = no dates yet (current status only)</span><span><i style="background:#d97706"></i>NRND</span><span><i style="background:#ea580c"></i>LTB window</span><span><i style="background:#dc2626;width:9px;height:9px;transform:rotate(45deg);border-radius:2px"></i>EOL</span><span><i style="background:var(--card);border:2.5px solid #2563eb;width:8px;height:8px;transform:rotate(45deg);border-radius:2px"></i>Event (tap)</span><span style="color:var(--acc);font-weight:600">→ successor</span><span class="ztip">${'ontouchstart' in window?'Pinch to zoom':'Ctrl/⌘ + scroll to zoom'}</span></div>
   <div class="sec"><h2>Next 12 months</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="events">+ Event</button>`:''}</div>
   ${up.length?`<div class="card">${up.map(upItem).join('')}</div>`:'<div class="card empty">Nothing scheduled in the next 12 months.</div>'}`;
 }
@@ -815,14 +815,15 @@ function timelineInner(products){
 }
 function tlRow(p,X,W,grid){
   const ph=phase(p),pts=[],rd=d(p.supplier_release_date),od=d(p.onboard_date),nd=d(p.nrnd_date),ld=d(p.ltb_date),ed=d(p.eol_date);
-  if(rd)pts.push([rd,od?'evaluating':(RANK[p.lifecycle]>=2?'active':p.lifecycle)]);
+  if(p.lifecycle==='development'&&rd&&rd>today){pts.push([today,'development']);pts.push([rd,'evaluating'])} // building now → supplier release → evaluation
+  else if(rd)pts.push([rd,od?'evaluating':(RANK[p.lifecycle]>=2?'active':p.lifecycle)]);
   if(od)pts.push([od,'active']);if(nd)pts.push([nd,'nrnd']);if(ld)pts.push([ld,'ltb']);if(ed)pts.push([ed,'end']);
   pts.sort((a,b)=>a[0]-b[0]);
   let bars='';
   if(!pts.length){const c=LC[ph]?.c||'#999',tx=X(today);
     bars=`<div class="bar" style="left:0;width:${W}px;background:${c};opacity:.22"></div>`
       +`<div class="nodates" style="left:${tx+8}px;color:${c}">no dates · ${esc(LC[ph]?.l||'')}</div>`}
-  for(let i=0;i<pts.length;i++){const[dt,k]=pts[i];if(k==='end')break;const x0=X(dt),x1=pts[i+1]?X(pts[i+1][0]):W;if(x1-x0<1)continue;const c=LC[k]?.c||'#999',plan=k==='evaluating'||k==='onboarding';
+  for(let i=0;i<pts.length;i++){const[dt,k]=pts[i];if(k==='end')break;const x0=X(dt),x1=pts[i+1]?X(pts[i+1][0]):W;if(x1-x0<1)continue;const c=LC[k]?.c||'#999',plan=k==='development'||k==='evaluating'||k==='onboarding';
     bars+=`<div class="bar" style="left:${x0}px;width:${x1-x0}px;${plan?`background:repeating-linear-gradient(135deg,${c}66 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1.5px ${c}`:`background:${c}`}"></div>`}
   if(ld)bars+=`<div class="mk" style="left:${X(ld)}px;background:#ea580c"></div>`;
   if(ed)bars+=`<div class="mk" style="left:${X(ed)}px;background:#dc2626"></div>`;
@@ -879,7 +880,7 @@ function completeness(p){
 const LCOLS=[
   ['part','Product',p=>p.part_number.toLowerCase()],
   ['sup','Supplier',p=>(sup(p)?.name||'').toLowerCase()],
-  ['status','Status',p=>['evaluating','onboarding','active','nrnd','ltb','eol','rejected'].indexOf(phase(p))],
+  ['status','Status',p=>['development','evaluating','onboarding','active','nrnd','ltb','eol','rejected'].indexOf(phase(p))],
   ['rel','Release',p=>p.supplier_release_date||p.onboard_date||null],
   ['nrnd','NRND',p=>p.nrnd_date||null],['ltb','LTB',p=>p.ltb_date||null],['eol','EOL',p=>p.eol_date||null],
   ['price','List price',p=>p.list_price??null],
@@ -934,7 +935,7 @@ function cmpBase(){return S.data.products.filter(p=>p.category===S.cmp.cat).sort
 function cmpSel(){
   const base=cmpBase();let ids=S.cmp.sel[S.cmp.cat];
   if(!ids){ // default: current + upcoming products, no accessories, max 8
-    const pick=base.filter(p=>['evaluating','onboarding','active'].includes(phase(p))&&!/accessor/i.test(p.sub_type||''));
+    const pick=base.filter(p=>['development','evaluating','onboarding','active'].includes(phase(p))&&!/accessor/i.test(p.sub_type||''));
     ids=(pick.length?pick:base).map(p=>p.id).slice(0,8);S.cmp.sel[S.cmp.cat]=ids}
   return base.filter(p=>ids.includes(p.id));
 }
@@ -1115,7 +1116,7 @@ const kvItem=(l,v,sub)=>`<div><span>${l}</span><b>${v||'—'}</b>${sub?`<small>$
 const SHEETS={
  product(e){
   const p=byId('products',e.id);if(!p)return null;
-  const s=sup(p),ph=phase(p),steps=['evaluating','onboarding','active','nrnd','ltb','eol'],ri=steps.indexOf(ph);
+  const s=sup(p),ph=phase(p),steps=['development','evaluating','onboarding','active','nrnd','ltb','eol'],ri=steps.indexOf(ph);
   const out=S.data.transitions.filter(t=>t.from_product_id===p.id),inn=S.data.transitions.filter(t=>t.to_product_id===p.id);
   const cps=S.data.customer_products.filter(c=>c.product_id===p.id),evs=S.data.events.filter(x=>x.product_id===p.id).sort((a,b)=>b.event_date.localeCompare(a.event_date));
   const pns=S.data.part_numbers.filter(x=>x.product_id===p.id).sort((a,b)=>String(a.part_number).localeCompare(String(b.part_number)));
@@ -1126,7 +1127,7 @@ const SHEETS={
    <div class="hero"><h2>${esc(p.part_number)}</h2><div class="mut">${esc(p.name)}</div>
    <div class="row" style="margin-top:8px;flex-wrap:wrap">${badge(ph)}<span class="tag"><i class="dot" style="background:${esc(s?.color||'#999')};width:7px;height:7px"></i> ${esc(s?.name||'')}</span><span class="tag">${esc(p.family||CATS1[p.category]||'')}</span>${p.website_status?`<span class="tag">Web: ${esc(p.website_status)}</span>`:''}</div>
    ${p.sub_type?`<div class="mut" style="margin-top:6px">${esc(p.sub_type)}${p.product_code?' · '+esc(p.product_code):''}</div>`:''}</div>
-   ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
+   ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Dev</span><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
    <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
     ${dateRows.map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
    ${gantt(p)}
@@ -1241,7 +1242,7 @@ const A={
  fclrall:()=>{FGROUPS.forEach(g=>S.F[g.k]=[]);S.F.q='';const q=$('#q');if(q)q.value='';refreshResults()},
  ftoggle:(id,arg,el)=>{S.fOpen=!S.fOpen;$('#fbody')?.classList.toggle('open',S.fOpen);el.setAttribute('aria-expanded',S.fOpen)},
  zoom:(id,arg)=>{if(arg==='today')return zoomToday();setZoom(S.mw*(arg==='in'?1.4:1/1.4))},
- statgo:(id,arg)=>{if(arg==='mig'){S.tab='transitions';S.stack=[];renderAll();window.scrollTo(0,0)}else{S.F.ph=[arg];S.rmView='list';refreshResults();const r=$('#results');r&&r.scrollIntoView({behavior:'smooth',block:'start'})}},
+ statgo:(id,arg)=>{if(arg==='mig'){S.tab='transitions';S.stack=[];renderAll();window.scrollTo(0,0)}else{S.F.ph=arg==='pipeline'?['dev','pipeline']:[arg];S.rmView='list';refreshResults();const r=$('#results');r&&r.scrollIntoView({behavior:'smooth',block:'start'})}},
  rmview:(id,k)=>{S.rmView=k;S.tlScroll=null;refreshResults()},
  lsort:(id,k)=>{if(S.lsort.k===k)S.lsort.dir*=-1;else S.lsort={k,dir:k==='comp'?1:['price','io','if'].includes(k)?-1:1};refreshResults()},
  csv:()=>exportCSV(),
