@@ -229,6 +229,41 @@ a{color:var(--acc)}
 .miss{font-size:11.5px;color:var(--warn);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hwgrid{display:grid;grid-template-columns:1fr;gap:0 12px}
 @media (min-width:700px){.hwgrid{grid-template-columns:1fr 1fr}}
+/* product development roadmap (Gantt) */
+.gantt{padding:10px 12px 12px}
+.gantt .grow-r{display:flex;align-items:center;min-height:38px}
+.gantt .glab{width:38%;max-width:220px;flex:none;padding-right:10px;min-width:0}
+.gantt .glab b{display:block;font-size:13px}
+.gantt .glab span{display:block;font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt .gtrack{position:relative;flex:1;height:100%;min-height:30px}
+.gantt .gaxis{min-height:36px;border-bottom:1px solid var(--line)}
+.gantt .gt{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.gantt .gt.gy{border-left-color:color-mix(in srgb,var(--mut) 45%,transparent)}
+.gantt .gt span{position:absolute;left:4px;font-size:10.5px;color:var(--mut);white-space:nowrap}
+.gantt .gt .gyl{top:2px;color:var(--ink);font-weight:700;font-size:11px}
+.gantt .gt .gq{top:19px}
+.gantt .gbody{position:relative}
+.gantt .gover{position:absolute;inset:0;display:flex;pointer-events:none}
+.gantt .gover .gtrack{height:auto}
+.gantt .grow-h{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);padding:10px 0 2px;position:relative;z-index:1}
+.gantt .grow-r[data-act]{cursor:pointer;border-radius:8px}
+.gantt .grow-r[data-act]:hover{background:color-mix(in srgb,var(--acc) 6%,transparent)}
+.gantt .gbar{position:absolute;top:50%;height:16px;transform:translateY(-50%);border-radius:8px;background:var(--c);z-index:1;font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:16px;min-width:8px}
+.gantt .gb-done{opacity:.45}
+.gantt .gb-in_progress{background:repeating-linear-gradient(135deg,var(--c) 0 6px,color-mix(in srgb,var(--c) 70%,#fff) 6px 12px)}
+.gantt .gb-at_risk{box-shadow:0 0 0 2px var(--bad)}
+.gantt .gb-cancelled{opacity:.25;background:repeating-linear-gradient(135deg,var(--c) 0 3px,transparent 3px 7px)}
+.gantt .gst{font-style:normal;font-weight:700}
+.gantt .gst-at_risk{color:var(--bad)}.gantt .gst-done{color:var(--ok)}.gantt .gst-in_progress{color:var(--acc)}.gantt .gst-cancelled{text-decoration:line-through}
+.gantt .gtoday{position:absolute;top:0;bottom:0;width:2px;background:var(--acc);opacity:.6;z-index:2}
+.gantt .gm{position:absolute;top:0;bottom:0;border-left:2px dashed var(--c,#94a3b8);z-index:2}
+.gantt .gm span{position:absolute;top:2px;left:3px;font-size:9.5px;font-weight:800;color:var(--c,#94a3b8);background:var(--card);padding:0 3px;border-radius:3px;white-space:nowrap}
+.gm-nrnd{--c:#d97706}.gm-ltb{--c:#ea580c}.gm-eol{--c:#dc2626}.gm-supplier{--c:#16a34a}
+@media (max-width:600px){.gantt .glab{width:32%}.gantt .glab b{font-size:12px}.gantt .glab span{font-size:10px;white-space:normal}.gantt{padding:8px 8px 10px}}
+.gantt .glegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--mut);margin-top:10px}
+.gantt .glegend i{display:inline-block;width:14px;height:8px;border-radius:4px;margin-right:4px;vertical-align:middle}
+.gantt .glegend .gl-today{width:2px;height:12px;background:var(--acc);border-radius:0}
+.gantt .glegend .gl-mark{width:0;height:12px;border-left:2px dashed #94a3b8;border-radius:0}
 /* collapsible filter panel */
 .shead,.srail{display:none}
 .fpills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:12.5px}
@@ -315,8 +350,8 @@ const MIG=[['not_started','Not started'],['notified','Customer notified'],['eval
 const MIGC={not_started:'#94a3b8',notified:'#0ea5e9',evaluating:'#8b5cf6',sampling:'#6366f1',validating:'#d97706',released:'#16a34a',complete:'#16a34a',at_risk:'#dc2626'};
 const EVK=[['announcement','Supplier announcement'],['pcn','PCN / change notice'],['release','Release'],['nrnd','NRND'],['ltb','Last-time buy'],['eol','End of life'],['milestone','Milestone'],['note','Note']];
 const EVC={milestone:'#2563eb',announcement:'#0ea5e9',pcn:'#8b5cf6',release:'#16a34a',nrnd:'#d97706',ltb:'#ea580c',eol:'#dc2626',note:'#64748b'};
-const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers'];
-const OPTIONAL=['part_numbers']; // added in schema upgrade v2 — app still loads if it hasn't been run
+const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers','dev_items'];
+const OPTIONAL=['part_numbers','dev_items']; // added in schema upgrade v2 — app still loads if it hasn't been run
 const WIDEQ='(min-width:900px), (orientation:landscape) and (min-width:700px)';
 const wide=()=>matchMedia(WIDEQ).matches;
 let LW=118;                       // label column width (wider on desktop)
@@ -403,7 +438,7 @@ async function remove(table,id){
     if(table==='products'&&S.data.customer_products.some(c=>c.product_id===id))throw new Error('Remove this product from its customers first.');
     if(table==='suppliers'&&S.data.products.some(p=>p.supplier_id===id))throw new Error('This supplier still has products.');
     S.data[table]=S.data[table].filter(x=>x.id!==id);
-    if(table==='products'){S.data.transitions=S.data.transitions.filter(t=>t.from_product_id!==id&&t.to_product_id!==id);S.data.events=S.data.events.filter(e=>e.product_id!==id);S.data.part_numbers=S.data.part_numbers.filter(x=>x.product_id!==id)}
+    if(table==='products'){S.data.transitions=S.data.transitions.filter(t=>t.from_product_id!==id&&t.to_product_id!==id);S.data.events=S.data.events.filter(e=>e.product_id!==id);S.data.part_numbers=S.data.part_numbers.filter(x=>x.product_id!==id);S.data.dev_items=S.data.dev_items.filter(x=>x.product_id!==id)}
     if(table==='suppliers')S.data.events=S.data.events.filter(e=>e.supplier_id!==id);
     if(table==='customers')S.data.customer_products=S.data.customer_products.filter(c=>c.customer_id!==id);
     if(table==='transitions')S.data.customer_products.forEach(c=>{if(c.transition_id===id)c.transition_id=null});
@@ -458,6 +493,42 @@ const custOpts=()=>S.data.customers.slice().sort((a,b)=>a.name.localeCompare(b.n
 const trOpts=()=>S.data.transitions.map(t=>[t.id,`${pnOf(t.from_product_id)} → ${pnOf(t.to_product_id)}`]);
 const IMP=[['unknown','Not assessed'],['none','None'],['minor','Minor'],['major','Major']];
 const IFACES=['CAN','Ethernet','Automotive Ethernet (T1)','RS232','RS485','LIN','USB','GMSL2','Wi-Fi','Bluetooth','Cellular (LTE/5G)','GNSS','LoRaWAN','SENT'];
+/* ---------- per-product development roadmap (Gantt) ---------- */
+const DEVK=[{k:'feature',l:'Feature',c:'#2563eb'},{k:'maintenance',l:'Maintenance',c:'#d97706'},{k:'test',l:'Test',c:'#8b5cf6'}];
+const DEVS=[{k:'planned',l:'Planned'},{k:'in_progress',l:'In progress'},{k:'done',l:'Done'},{k:'at_risk',l:'At risk'},{k:'cancelled',l:'Cancelled'}];
+function gantt(p){
+  const items=(S.data.dev_items||[]).filter(x=>x.product_id===p.id&&x.start_date&&x.end_date);
+  const add=canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="dev_items" data-def="${esc(JSON.stringify({product_id:p.id}))}">+ Add</button>`:'';
+  const head=`<div class="sec"><h2>Product roadmap</h2>${add}</div>`;
+  if(!items.length)return head+`<div class="card empty" style="padding:16px">No features, maintenance or test work planned yet.${canEdit()?'<br><span class="mut">Add items like secure boot, a framework update or a validation campaign.</span>':''}</div>`;
+  // time window: whole quarters covering the items, today, and at least ~12 months ahead
+  const ds=items.flatMap(x=>[d(x.start_date),d(x.end_date)]);
+  let a=new Date(Math.min(...ds,+today-60*864e5)),b=new Date(Math.max(...ds,+today+300*864e5));
+  a=new Date(a.getFullYear(),Math.floor(a.getMonth()/3)*3,1);b=new Date(b.getFullYear(),Math.floor(b.getMonth()/3)*3+3,1);
+  const span=b-a,pct=dt=>Math.max(0,Math.min(100,(dt-a)/span*100));
+  const months=(b.getFullYear()-a.getFullYear())*12+b.getMonth()-a.getMonth();
+  let ticks='';for(let m=0;m<months;m+=3){const t=new Date(a.getFullYear(),a.getMonth()+m,1),q=t.getMonth()/3+1;
+    // year on its own line (at every Q1 and at the left edge), quarter below it
+    ticks+=`<div class="gt${q===1?' gy':''}" style="left:${pct(t)}%">${q===1||m===0?`<span class="gyl">${t.getFullYear()}</span>`:''}${months>36?'':`<span class="gq">Q${q}</span>`}</div>`}
+  const marks=[['supplier_release_date','Release'],['nrnd_date','NRND'],['ltb_date','LTB'],['eol_date','EOL']].filter(([k])=>p[k]&&d(p[k])>=a&&d(p[k])<=b)
+    .map(([k,l])=>`<div class="gm gm-${k.split('_')[0]}" style="left:${pct(d(p[k]))}%" title="${l} ${fmt(p[k])}"><span>${l}</span></div>`).join('');
+  const axisTicks=ticks,lineTicks=ticks.replace(/<span[^>]*>.*?<\/span>/g,'');
+  const tx=today>=a&&today<=b?`<div class="gtoday" style="left:${pct(today)}%"></div>`:'';
+  let rows='';
+  DEVK.forEach(k=>{const L=items.filter(x=>x.kind===k.k).sort((x,y)=>x.start_date.localeCompare(y.start_date));if(!L.length)return;
+    rows+=`<div class="grow-h"><span class="dot" style="background:${k.c};width:8px;height:8px"></span> ${k.l} · ${L.length}</div>`;
+    L.forEach(x=>{const l=pct(d(x.start_date)),r=pct(d(x.end_date)),w=Math.max(r-l,1.2),st=DEVS.find(s=>s.k===x.status)||DEVS[0];
+      rows+=`<div class="grow-r" ${canEdit()?`data-act="edit" data-arg="dev_items" data-id="${x.id}"`:''} title="${esc(x.title)} · ${fmt(x.start_date)} – ${fmt(x.end_date)} · ${st.l}">
+        <div class="glab"><b class="ell">${esc(x.title)}</b><span>${fmtMY(x.start_date)} – ${fmtMY(x.end_date)}${x.status!=='planned'?` · <i class="gst gst-${x.status}">${st.l}</i>`:''}</span></div>
+        <div class="gtrack"><div class="gbar gb-${x.status}" style="left:${l}%;width:${w}%;--c:${k.c}">${x.status==='done'?'✓':''}</div></div></div>`})});
+  const late=['ltb_date','eol_date'].map(f=>p[f]).filter(Boolean).sort()[0];
+  const after=late?items.filter(x=>x.kind==='feature'&&x.status!=='cancelled'&&x.end_date>late).length:0;
+  return head+`<div class="card gantt">
+    <div class="grow-r gaxis"><div class="glab"></div><div class="gtrack">${axisTicks}</div></div>
+    <div class="gbody">${rows}<div class="gover"><div class="glab"></div><div class="gtrack">${lineTicks}${tx}${marks}</div></div></div>
+    <div class="glegend">${DEVK.map(k=>`<span><i style="background:${k.c}"></i>${k.l}</span>`).join('')}<span><i class="gl-today"></i>Today</span>${marks?'<span><i class="gl-mark"></i>Lifecycle date</span>':''}</div>
+    ${after?`<div class="banner" style="margin:10px 0 0">⚠ ${after} feature${after>1?'s finish':' finishes'} after this product's ${p.ltb_date&&p.ltb_date===late?'last-time buy':'end of life'} (${fmtMY(late)}).</div>`:''}</div>`;
+}
 /* hardware spec templates per category (stored in products.hardware as {field: text}) */
 const HW_CTL=['Processor','Cores / clock','RAM','Flash / storage','Co-processor / GPU','Operating system','Power / supply','Operating temperature','Power consumption'];
 const HWT={controller:HW_CTL,telematics:HW_CTL,
@@ -524,6 +595,12 @@ const FORMS={
   {k:'price_basis',l:'Price basis (e.g. qty 100, per unit)'},{k:'price_date',l:'Price as of',t:'date'},
   {h:'Links'},{k:'product_url',l:'Product page',t:'url'},{k:'datasheet_url',l:'Datasheet link',t:'url'},
   {h:'Notes'},{k:'notes',l:'Notes',t:'textarea'}]},
+ dev_items:{title:'Roadmap item',defaults:{kind:'feature',status:'planned'},fields:()=>[
+  {k:'product_id',l:'Product',t:'select',o:prodOpts(),req:1},{k:'kind',l:'Type',t:'select',o:DEVK.map(k=>[k.k,k.l]),req:1},
+  {k:'title',l:'Title (e.g. Secure boot, new framework)',req:1},
+  {row2:[{k:'start_date',l:'Start',t:'date',req:1},{k:'end_date',l:'End',t:'date',req:1}]},
+  {k:'status',l:'Status',t:'select',o:DEVS.map(k=>[k.k,k.l]),req:1},
+  {k:'details',l:'Details',t:'textarea'},{k:'link',l:'Link (supplier roadmap, release notes…)',t:'url'}]},
  part_numbers:{title:'Part number',fields:()=>[
   {k:'product_id',l:'Product',t:'select',o:prodOpts(),req:1},{k:'part_number',l:'Part number',req:1},{k:'variant',l:'Variant / configuration'},
   {k:'status',l:'PN status'},{k:'successor_pn',l:'Successor PN'},{k:'ltb_date',l:'Last-time buy',t:'date'},{k:'notes',l:'Notes',t:'textarea'}]},
@@ -1052,6 +1129,7 @@ const SHEETS={
    ${ph==='rejected'?'':`<div class="card" style="margin-top:14px"><div class="stepper">${steps.map((k,i)=>`<i style="${i<=ri?`background:${LC[k].c}`:''}"></i>`).join('')}</div><div class="stepl"><span>Eval</span><span>Onboard</span><span>Active</span><span>NRND</span><span>LTB</span><span>EOL</span></div></div>`}
    <div class="sec"><h2>Lifecycle dates</h2></div><div class="card kv">
     ${dateRows.map(([k,l])=>kvItem(l,p[k]?fmt(p[k]):'',p[k]?relTxt(p[k]):'')).join('')}</div>
+   ${gantt(p)}
    <div class="sec"><h2>Hardware</h2></div>${(()=>{const hw=p.hardware||{},ks=hwKeys(p.category,hw).filter(k=>hw[k]);
       const extra=[p.ip_rating&&['IP rating',p.ip_rating],p.connector&&['Connectors',p.connector]].filter(Boolean);
       return ks.length||extra.length?`<div class="card kv">${ks.map(k=>kvItem(esc(k),esc(hw[k]))).join('')}${extra.map(([l,v])=>kvItem(l,esc(v))).join('')}</div>`:`<div class="card empty" style="padding:14px">No hardware specs yet${canEdit()?' — tap Edit to add them.':'.'}</div>`})()}
@@ -1317,6 +1395,7 @@ document.addEventListener('submit',async e=>{
     S.user=data.user;return afterLogin()}
   if(f.id==='frm'){
     const top=S.stack[S.stack.length-1],F=FORMS[top.table],o=collect(f,F.fields());
+    if(top.table==='dev_items'&&o.start_date&&o.end_date&&o.end_date<o.start_date)return toast('End date must be on or after the start date.');
     if(top.table==='transitions'&&o.from_product_id===o.to_product_id)return toast('From and To must be different products.');
     if(top.id)o.id=top.id;
     const oldMarket=top.table==='markets'&&top.id?byId('markets',top.id)?.name:null;
