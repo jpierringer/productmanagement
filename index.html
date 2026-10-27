@@ -319,6 +319,55 @@ a{color:var(--acc)}
   .side{top:56px;max-height:calc(100vh - 64px)}
 }
 @keyframes slide{from{transform:translateX(100%)}}
+
+/* ---------- ideas ---------- */
+.ibar{display:flex;gap:8px;margin:4px 0 10px}
+.ibar input{flex:1;min-width:0}
+.ibar2{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.ibar2 .chips{max-width:100%}
+.isort{width:auto;padding:7px 30px 7px 10px;font-size:13px}
+.ibar2 .vsw{margin:0}
+.icard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:5px;cursor:pointer;box-shadow:var(--shadow);min-width:0}
+.icard:hover{border-color:color-mix(in srgb,var(--acc) 45%,var(--line))}
+.icard.dragging{opacity:.45}
+.ititle{font-size:14.5px;line-height:1.3}
+.ival{font-size:12.5px;color:var(--mut)}.ival b{color:var(--ink)}
+.needsz{display:inline-block;font-size:11px;font-weight:700;color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent);padding:2px 7px;border-radius:6px}
+.iprods{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.iprods .chip{font-size:11.5px;padding:2px 8px}
+.imeta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--mut);align-items:center}.imeta>span{white-space:nowrap}
+.grow-sp{flex:1}
+.ilist{display:flex;flex-direction:column;gap:8px}
+.iline{position:relative}.iline .ilst{position:absolute;top:10px;right:12px}
+.iline .icard{padding-right:12px}.iline .icard>.row:first-child{padding-right:110px}
+.iboard{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(178px,1fr);gap:10px;overflow-x:auto;padding-bottom:12px;align-items:start}
+.icol{background:var(--chip);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px;border:2px dashed transparent}
+.icol.over{border-color:var(--acc)}
+.icolh{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px;padding:2px 4px;flex-wrap:wrap}
+.icolh .cnt{font-weight:600;color:var(--mut)}.icolh .ival2{font-weight:500;font-size:11.5px;width:100%}
+.icempty{color:var(--mut);text-align:center;padding:10px;font-size:13px}
+.picker select{margin-top:6px}
+.chip .x{border:0;background:none;color:inherit;font-size:12px;padding:0 0 0 4px;opacity:.7;cursor:pointer}
+.rchip{cursor:pointer}
+.sizing{background:var(--chip);border-radius:12px;padding:12px;margin:4px 0 14px}
+.sizing .chip{background:var(--card)}.sizing .chip.on{background:var(--ink)}
+.custother{margin-top:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+.pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.att{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 0;border-top:1px solid var(--line)}
+.att:first-child{border-top:0}
+.att img{display:block;max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--line)}
+.att>a:first-child{flex-basis:100%}.att>a.noimg{display:none}
+.attl{flex:1;min-width:0;overflow-wrap:anywhere}
+.attform{display:grid;grid-template-columns:1fr 1.4fr auto auto;gap:6px;margin-top:10px}
+@media (max-width:520px){.attform{grid-template-columns:1fr 1fr}}
+.itl .tla{font-size:12.5px;padding:5px 0 5px 10px;border-left:2px solid var(--line)}
+.itl .tlc{background:var(--chip);border-radius:10px;padding:8px 10px;margin:8px 0}
+.itl .tlc.internal{background:color-mix(in srgb,#7c3aed 10%,transparent);border:1px dashed color-mix(in srgb,#7c3aed 45%,transparent)}
+.tlh{font-size:12.5px;margin-bottom:2px}
+.tlc .tg,.itl .tg{font-size:13px;color:var(--mut)}
+body.wide .fab[data-act=ideanew]{display:none}
+body:not(.wide) .ibar .btn.pri{display:none}
 </style>
 </head>
 <body>
@@ -350,8 +399,9 @@ const MIG=[['not_started','Not started'],['notified','Customer notified'],['eval
 const MIGC={not_started:'#94a3b8',notified:'#0ea5e9',evaluating:'#8b5cf6',sampling:'#6366f1',validating:'#d97706',released:'#16a34a',complete:'#16a34a',at_risk:'#dc2626'};
 const EVK=[['announcement','Supplier announcement'],['pcn','PCN / change notice'],['release','Release'],['nrnd','NRND'],['ltb','Last-time buy'],['eol','End of life'],['milestone','Milestone'],['note','Note']];
 const EVC={milestone:'#2563eb',announcement:'#0ea5e9',pcn:'#8b5cf6',release:'#16a34a',nrnd:'#d97706',ltb:'#ea580c',eol:'#dc2626',note:'#64748b'};
-const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers','dev_items'];
-const OPTIONAL=['part_numbers','dev_items']; // added in schema upgrade v2 — app still loads if it hasn't been run
+const IDEA_TABLES=['ideas','idea_links','idea_comments','idea_attachments','idea_votes','idea_activity','idea_watchers'];
+const TABLES=['suppliers','markets','products','transitions','customers','customer_products','events','part_numbers','dev_items',...IDEA_TABLES];
+const OPTIONAL=['part_numbers','dev_items',...IDEA_TABLES]; // added in schema upgrade v2 — app still loads if it hasn't been run
 const WIDEQ='(min-width:900px), (orientation:landscape) and (min-width:700px)';
 const wide=()=>matchMedia(WIDEQ).matches;
 let LW=118;                       // label column width (wider on desktop)
@@ -361,9 +411,10 @@ const PHG_OF={development:'dev',evaluating:'pipeline',onboarding:'pipeline',acti
 
 /* ---------- state ---------- */
 const S={mode:'demo',sb:null,user:null,role:'admin',tab:'roadmap',stack:[],data:{},
-  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[],cmp:{cat:'controller',sel:{},diff:false,gaps:true,metric:'io',priceBy:'list'},rmView:'timeline',lsort:{k:'part',dir:1},incOnly:false};
-try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true;if(v.cmp)Object.assign(S.cmp,v.cmp);if(v.rmView)S.rmView=v.rmView;if(v.lsort)S.lsort=v.lsort;S.incOnly=!!v.incOnly}}catch(e){}
-function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol,cmp:S.cmp,rmView:S.rmView,lsort:S.lsort,incOnly:S.incOnly}))}catch(e){}}
+  f:{group:'category'},F:{q:'',sup:[],cat:[],ph:[],mkt:[],can:[]},mw:wide()?30:22,fOpen:false,tlScroll:null,rows:[],cmp:{cat:'controller',sel:{},diff:false,gaps:true,metric:'io',priceBy:'list'},rmView:'timeline',lsort:{k:'part',dir:1},incOnly:false,
+  iv:{q:'',grp:'open',type:[],mine:false,waiting:false,sort:'value',view:'board'}};
+try{const v=JSON.parse(localStorage.getItem('rm_view')||'null');if(v){Object.assign(S.F,v.F||{});if(v.group)S.f.group=v.group;if(v.mw)S.mw=v.mw;if(v.sideCol)S.sideCol=true;if(v.cmp)Object.assign(S.cmp,v.cmp);if(v.rmView)S.rmView=v.rmView;if(v.lsort)S.lsort=v.lsort;S.incOnly=!!v.incOnly;if(v.iv)Object.assign(S.iv,v.iv,{q:''})}}catch(e){}
+function saveView(){try{localStorage.setItem('rm_view',JSON.stringify({F:S.F,group:S.f.group,mw:S.mw,sideCol:!!S.sideCol,cmp:S.cmp,rmView:S.rmView,lsort:S.lsort,incOnly:S.incOnly,iv:{...S.iv,q:''}}))}catch(e){}}
 TABLES.forEach(t=>S.data[t]=[]);
 
 /* ---------- helpers ---------- */
@@ -411,12 +462,18 @@ function errMsg(e){let m=e?.message||String(e);if(/schema/i.test(m)&&/must be on
 /* ---------- data layer (Supabase or local demo) ---------- */
 function cfg(){let s={};try{s=JSON.parse(localStorage.getItem('rm_cfg')||'{}')}catch(e){}return{url:CONFIG.SUPABASE_URL||s.url||'',key:CONFIG.SUPABASE_ANON_KEY||s.key||'',hard:!!CONFIG.SUPABASE_URL}}
 const Demo={key:'rm_demo_v1',
-  load(){let x=null;try{x=JSON.parse(localStorage.getItem(this.key))}catch(e){}if(!x){x=seed();this.save(x)}TABLES.forEach(t=>x[t]=x[t]||[]);return x},
+  load(){let x=null;try{x=JSON.parse(localStorage.getItem(this.key))}catch(e){}if(!x){x=seed();this.save(x)}if(!x.ideas){x.customers=x.customers||[];seedIdeas(x);this.save(x)}TABLES.forEach(t=>x[t]=x[t]||[]);return x},
   save(x){try{localStorage.setItem(this.key,JSON.stringify(x))}catch(e){}}};
 async function loadAll(){
-  if(S.mode==='demo'){S.data=Demo.load();return}
-  const res=await Promise.all(TABLES.map(t=>S.sb.from(t).select('*').range(0,9999)));
-  res.forEach((r,i)=>{const t=TABLES[i];if(r.error){if(OPTIONAL.includes(t)){S.data[t]=[];return}throw r.error}S.data[t]=r.data||[]});
+  if(S.mode==='demo'){S.data=Demo.load();
+    S.data.product_options=S.data.products.map(p=>({id:p.id,part_number:p.part_number,name:p.name,category:p.category}));
+    S.data.customer_options=S.data.customers.map(c=>({id:c.id,name:c.name,market:c.market}));return}
+  // contributors only see Ideas (plus product / customer names to pick from)
+  const T=isContrib()?[...IDEA_TABLES,'product_options','customer_options']:TABLES;
+  const res=await Promise.all(T.map(t=>S.sb.from(t).select('*').range(0,9999)));
+  if(isContrib())TABLES.forEach(t=>S.data[t]=[]);
+  res.forEach((r,i)=>{const t=T[i];if(r.error){if(OPTIONAL.includes(t)||isContrib()&&!IDEA_TABLES.includes(t)){S.data[t]=[];return}
+    if(IDEA_TABLES.includes(t)){S.data[t]=[];return}throw r.error}S.data[t]=r.data||[]});
 }
 function clean(row){const o={};for(const[k,v]of Object.entries(row)){if(['created_at','updated_at','updated_by'].includes(k)||v===undefined)continue;o[k]=v===''?null:v}return o}
 async function save(table,row){
@@ -440,6 +497,7 @@ async function remove(table,id){
     S.data[table]=S.data[table].filter(x=>x.id!==id);
     if(table==='products'){S.data.transitions=S.data.transitions.filter(t=>t.from_product_id!==id&&t.to_product_id!==id);S.data.events=S.data.events.filter(e=>e.product_id!==id);S.data.part_numbers=S.data.part_numbers.filter(x=>x.product_id!==id);S.data.dev_items=S.data.dev_items.filter(x=>x.product_id!==id)}
     if(table==='suppliers')S.data.events=S.data.events.filter(e=>e.supplier_id!==id);
+    if(table==='ideas')IDEA_TABLES.slice(1).forEach(t=>S.data[t]=S.data[t].filter(x=>x.idea_id!==id));
     if(table==='customers')S.data.customer_products=S.data.customer_products.filter(c=>c.customer_id!==id);
     if(table==='transitions')S.data.customer_products.forEach(c=>{if(c.transition_id===id)c.transition_id=null});
     Demo.save(S.data);return;
@@ -650,22 +708,25 @@ const ICONS={compare:'<rect x="3.5" y="4" width="7" height="16" rx="1.6"/><rect 
  products:'<rect x="5" y="5" width="14" height="14" rx="2.5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
  transitions:'<path d="M4 8h14l-4-4M20 16H6l4 4"/>',
  customers:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.4M18 14.8c1.6.7 2.7 2.4 3 5.2"/>',
+ ideas:'<path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
  more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'};
-const TITLES={roadmap:'Roadmap',compare:'Compare',transitions:'Transitions',customers:'Customers',more:'More'};
+const TITLES={roadmap:'Roadmap',ideas:'Ideas',compare:'Compare',transitions:'Transitions',customers:'Customers',more:'More'};
+const navTabs=()=>isContrib()?['ideas','more']:Object.keys(TITLES);
 const fab=(table,def)=>canEdit()?`<button class="fab" data-act="new" data-arg="${table}" ${def?`data-def="${esc(JSON.stringify(def))}"`:''} aria-label="Add">+</button>`:'';
 
 function renderAll(){
+  if(!navTabs().includes(S.tab))S.tab=navTabs()[0];
   LW=!wide()?118:innerWidth>=1100?200:140;document.body.classList.toggle('wide',wide());
   $('#app').innerHTML=`<header class="top"><h1>${TITLES[S.tab]}</h1>${S.mode==='demo'?'<span class="tag">Demo</span>':''}
     ${S.mode==='live'?'<button class="btn ghost" data-act="refresh" aria-label="Refresh">↻ Sync</button>':''}</header>
     <main id="main"></main>
-    <nav class="tabs">${Object.keys(TITLES).map(k=>`<button class="${S.tab===k?'on':''}" data-act="tab" data-arg="${k}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${TITLES[k]}</button>`).join('')}</nav>`;
+    <nav class="tabs">${navTabs().map(k=>`<button class="${S.tab===k?'on':''}" data-act="tab" data-arg="${k}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${TITLES[k]}</button>`).join('')}</nav>`;
   renderMain();renderSheet();
 }
 function renderMain(){
   saveTl();
   const m=$('#main');if(!m)return;
-  m.innerHTML=({roadmap:viewRoadmap,products:viewProducts,compare:viewCompare,transitions:viewTransitions,customers:viewCustomers,more:viewMore})[S.tab]();
+  m.innerHTML=({roadmap:viewRoadmap,ideas:viewIdeas,products:viewProducts,compare:viewCompare,transitions:viewTransitions,customers:viewCustomers,more:viewMore})[S.tab]();
   restoreTl();
 }
 
@@ -1078,12 +1139,13 @@ function viewCustomers(){
 /* More tab */
 function viewMore(){
   const c=cfg(),ev=S.data.events.slice().sort((a,b)=>b.event_date.localeCompare(a.event_date)).slice(0,12);
-  return`<div class="narrow"><div class="sec"><h2>Suppliers</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="suppliers">+ Add</button>':''}</div>
+  const staffPart=isContrib()?'':`<div class="sec"><h2>Suppliers</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="suppliers">+ Add</button>':''}</div>
   ${S.data.suppliers.map(s=>{const n=S.data.products.filter(p=>p.supplier_id===s.id).length;return`<div class="li" data-act="edit" data-arg="suppliers" data-id="${s.id}"><i class="dot" style="background:${esc(s.color)}"></i><div class="grow"><div class="pn">${esc(s.name)}</div><div class="mut">${n} product${n===1?'':'s'}${s.roadmap_cadence?' · '+esc(s.roadmap_cadence):''}</div></div></div>`}).join('')}
   <div class="sec"><h2>Markets</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="markets">+ Add</button>':''}</div>
   <div class="card"><div class="chips wrap">${S.data.markets.map(m=>`<button class="chip" data-act="edit" data-arg="markets" data-id="${m.id}">${esc(m.name)}${m.status==='considering'?' <span class="mut">· considering</span>':''}</button>`).join('')}</div></div>
   <div class="sec"><h2>Supplier notices & events</h2>${canEdit()?'<button class="btn ghost sm" data-act="new" data-arg="events">+ Add</button>':''}</div>
-  ${ev.length?`<div class="card">${ev.map(e=>`<div class="ev" data-act="edit" data-arg="events" data-id="${e.id}"><div class="dt">${fmtMY(e.event_date)}</div><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc((EVK.find(k=>k[0]===e.kind)||[])[1]||'')}${e.product_id?' · '+esc(pnOf(e.product_id)):''}</div></div></div>`).join('')}</div>`:'<div class="card empty">No events yet.</div>'}
+  ${ev.length?`<div class="card">${ev.map(e=>`<div class="ev" data-act="edit" data-arg="events" data-id="${e.id}"><div class="dt">${fmtMY(e.event_date)}</div><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc((EVK.find(k=>k[0]===e.kind)||[])[1]||'')}${e.product_id?' · '+esc(pnOf(e.product_id)):''}</div></div></div>`).join('')}</div>`:'<div class="card empty">No events yet.</div>'}`;
+  return`<div class="narrow">${isContrib()?`<div class="card" style="margin-top:12px"><b>Contributor access</b><div class="mut" style="margin-top:4px">You can submit ideas, add +1s, comment and follow ideas. Ask the product team if you need access to the roadmap.</div></div>`:''}${staffPart}
   ${S.mode==='live'?`<div class="sec" id="account"><h2>Your account</h2></div>
   <div class="card">${tempPw()?`<div class="banner" style="margin:0 0 12px">You're still using the password you were given. Set your own below.</div>`:''}
     <form id="pw" autocomplete="on"><input type="email" name="username" value="${esc(S.user?.email)}" autocomplete="username" hidden>
@@ -1157,6 +1219,7 @@ const SHEETS={
    ${inn.length?`<div class="sec"><h2>Replaces</h2></div>${inn.map(trCard).join('')}`:''}
    <div class="sec"><h2>Customers using it</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="customer_products" data-def="${esc(JSON.stringify({product_id:p.id,transition_id:out[0]?.id||null}))}">+ Add</button>`:''}</div>
    ${cps.length?cps.map(c=>`<div class="li" data-act="customer" data-id="${c.customer_id}"><div class="grow"><div class="pn">${esc(byId('customers',c.customer_id)?.name)}</div><div class="mut">${c.annual_volume?c.annual_volume.toLocaleString()+'/yr · ':''}${c.transition_id?'→ '+esc(pnOf(byId('transitions',c.transition_id)?.to_product_id)):'No migration set'}</div></div>${migBadge(c.transition_status)}</div>`).join(''):'<div class="card empty" style="padding:16px">No customers linked.</div>'}
+   ${productIdeas(p)}
    <div class="sec"><h2>History & notices</h2>${canEdit()?`<button class="btn ghost sm" data-act="new" data-arg="events" data-def="${esc(JSON.stringify({product_id:p.id,supplier_id:p.supplier_id}))}">+ Add</button>`:''}</div>
    ${evs.length?`<div class="card">${evs.map(x=>`<div class="ev" data-act="edit" data-arg="events" data-id="${x.id}"><div class="dt">${fmtMY(x.event_date)}</div><div class="grow"><b>${esc(x.title)}</b>${x.details?`<div class="mut">${esc(x.details)}</div>`:''}</div></div>`).join('')}</div>`:'<div class="card empty" style="padding:16px">No events logged.</div>'}`};
  },
@@ -1263,6 +1326,457 @@ document.addEventListener('change',async e=>{
   if(t.dataset.change==='mig'){try{await save('customer_products',{id:t.dataset.id,transition_status:t.value});t.style.borderLeftColor=MIGC[t.value];toast('Status updated');renderMain()}catch(err){toast(errMsg(err))}}
 });
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.F.q=e.target.value;clearTimeout(refreshResults.t);refreshResults.t=setTimeout(refreshResults,120)}});
+
+/* =====================================================================
+   PRODUCT IDEAS
+   ===================================================================== */
+const IST=[['new','New','#0ea5e9'],['under_review','Under review','#8b5cf6'],['needs_info','Needs info','#d97706'],['accepted','Accepted','#16a34a'],
+  ['in_progress','In progress','#2563eb'],['delivered','Delivered','#0f766e'],['parked','Parked','#64748b'],['declined','Declined','#dc2626'],['duplicate','Duplicate','#94a3b8']];
+const ISM=Object.fromEntries(IST.map(([k,l,c])=>[k,{l,c}]));
+const ITYPE=[['software','Software'],['hardware','Hardware'],['product_kit','Product kit'],['service','Service'],['other','Other']];
+const ITM=Object.fromEntries(ITYPE);
+const IGROUPS=[['open','Open',['new','under_review','needs_info']],['planned','Planned',['accepted','in_progress']],['delivered','Delivered',['delivered']],
+  ['closed','Closed',['parked','declined','duplicate']],['all','All',IST.map(x=>x[0])]];
+const ICOLS=[['new','New'],['under_review','Under review'],['needs_info','Needs info'],['accepted','Accepted'],['in_progress','In progress'],['delivered','Delivered'],['closed','Closed']];
+const PRIO=[['critical','Critical'],['high','High'],['medium','Medium'],['low','Low']];
+const RANGES={units:[['<100',50],['100–500',300],['500–2k',1250],['2k–10k',6000],['10k+',15000]],
+  revenue:[['<$25k',12500],['$25–100k',62500],['$100–500k',300000],['$500k–1M',750000],['$1M+',1500000]]};
+const CONF=[['firm','Firm (RFQ / PO / nomination)',1],['stated','Customer stated',0.6],['estimate','Our estimate',0.25]];
+const CONFW=Object.fromEntries(CONF.map(c=>[c[0],c[2]]));
+const isContrib=()=>S.role==='contributor';
+const me=()=>(S.user?.email||'demo@local').toLowerCase();
+const who=e=>{if(!e)return'Someone';const n=String(e).split('@')[0].replace(/[._-]+/g,' ');return n.replace(/\b\w/g,c=>c.toUpperCase())};
+const prodList=()=>(isContrib()?S.data.product_options:S.data.products)||[];
+const custList=()=>(isContrib()?S.data.customer_options:S.data.customers)||[];
+const prodById=id=>prodList().find(p=>p.id===id);
+const custName=(id,name)=>name||(custList().find(c=>c.id===id)||{}).name||'';
+const ideaById=id=>(S.data.ideas||[]).find(x=>x.id===id);
+const iBadge=s=>`<span class="badge" style="--c:${ISM[s]?.c||'#94a3b8'}">${ISM[s]?.l||s}</span>`;
+const ago=t=>{const s=(Date.now()-new Date(t))/1000;return s<3600?Math.max(1,Math.round(s/60))+' min ago':s<86400?Math.round(s/3600)+' h ago':s<86400*30?Math.round(s/86400)+' d ago':fmt(String(t).slice(0,10))};
+
+/* ---- opportunity value: idea sizing + every +1, one entry per customer ---- */
+function sizingRev(x,price){
+  if(!x||!x.size_basis||x.size_basis==='unknown')return null;
+  const mid=(RANGES[x.size_basis].find(r=>r[0]===x.size_range)||[])[1],v=x.size_exact!=null&&x.size_exact!==''?+x.size_exact:mid;
+  if(v==null)return null;
+  if(x.size_basis==='revenue')return{rev:v};
+  return{units:v,rev:price!=null?v*price:null};
+}
+function ideaValue(i){
+  const links=(S.data.idea_links||[]).filter(l=>l.idea_id===i.id&&l.kind==='product');
+  const price=isContrib()?null:(links.map(l=>byId('products',l.target_id)?.list_price).find(v=>v!=null)??null);
+  const key=x=>x.customer_id||(x.customer_name||'').trim().toLowerCase()||('by:'+(x.voter||x.submitted_by));
+  const by=new Map(),fam=[i,...(S.data.ideas||[]).filter(x=>x.duplicate_of===i.id&&x.status==='duplicate')],ids=new Set(fam.map(x=>x.id));
+  const V=(S.data.idea_votes||[]).filter(v=>ids.has(v.idea_id));
+  [...fam.slice(1),i,...V].forEach(x=>{if(x.size_basis&&x.size_basis!=='unknown')by.set(key(x),x)});
+  let rev=0,units=0,w=0,firm=0,hasRev=false,hasUnits=false,uOnly=0;
+  by.forEach(x=>{const s=sizingRev(x,price);if(!s)return;
+    if(s.units!=null){units+=s.units;hasUnits=true;if(s.rev==null)uOnly+=s.units}
+    if(s.rev!=null){rev+=s.rev;w+=s.rev*(CONFW[x.confidence]??0.25);hasRev=true}
+    if(x.confidence==='firm')firm++});
+  const votes=V.length+fam.length-1;
+  const customers=new Set([...fam,...V].filter(x=>x.customer_id||x.customer_name||(x.size_basis&&x.size_basis!=='unknown')).map(key)).size;
+  const years=i.program_years||5;
+  return{uOnly,rev:hasRev?rev:null,units:hasUnits?units:null,weighted:hasRev?w:null,lifetime:hasRev?rev*years:null,firm,customers,votes,sized:by.size>0,years};
+}
+const kfmt=v=>v>=1e6?'$'+(v/1e6).toFixed(v>=1e7?0:1)+'M':v>=1e3?'$'+Math.round(v/1e3)+'k':'$'+Math.round(v);
+const ufmt=v=>v>=1e4?Math.round(v/1e3)+'k':v>=1e3?(v/1e3).toFixed(1)+'k':String(Math.round(v));
+function valueLine(i,v){
+  v=v||ideaValue(i);
+  if(!v.sized)return`<span class="needsz">Needs sizing</span>`;
+  const parts=[];
+  if(v.rev!=null)parts.push(`<b>~${kfmt(v.rev)}/yr</b>${v.uOnly?` + ${ufmt(v.uOnly)} units`:''}`);else if(v.units!=null)parts.push(`<b>~${ufmt(v.units)} units/yr</b>`);
+  if(v.customers)parts.push(`${v.customers} customer${v.customers>1?'s':''}${v.firm?` (${v.firm} firm)`:''}`);
+  return parts.join(' · ');
+}
+
+/* ---- list / board ---- */
+function ideaMatches(i){
+  const q=S.iv.q.trim().toLowerCase();
+  if(q){const prods=(S.data.idea_links||[]).filter(l=>l.idea_id===i.id&&l.kind==='product').map(l=>prodById(l.target_id)?.part_number||'').join(' ');
+    if(![i.title,i.problem,i.proposed_solution,i.customer_name,custName(i.customer_id),i.submitted_by,prods,ITM[i.idea_type]].join(' ').toLowerCase().includes(q))return false}
+  if(S.iv.type.length&&!S.iv.type.includes(i.idea_type))return false;
+  if(S.iv.mine&&i.submitted_by!==me()&&!(S.data.idea_votes||[]).some(v=>v.idea_id===i.id&&v.voter===me()))return false;
+  if(S.iv.waiting){if(canEdit()){if(!['new','under_review'].includes(i.status))return false}else if(!(i.submitted_by===me()&&i.status==='needs_info'))return false}
+  return true;
+}
+function ideaSort(L){
+  const k=S.iv.sort,val=new Map(L.map(i=>[i.id,ideaValue(i)]));
+  const pr={critical:0,high:1,medium:2,low:3};
+  return L.sort((a,b)=>{
+    if(k==='new')return String(b.created_at).localeCompare(String(a.created_at));
+    if(k==='updated')return String(b.updated_at).localeCompare(String(a.updated_at));
+    if(k==='votes')return val.get(b.id).votes-val.get(a.id).votes||String(b.created_at).localeCompare(String(a.created_at));
+    const pa=pr[a.pm_priority]??9,pb=pr[b.pm_priority]??9;if(pa!==pb)return pa-pb;   // PM priority first
+    const va=val.get(a.id),vb=val.get(b.id);
+    return (vb.weighted??-1)-(va.weighted??-1)||(vb.units??-1)-(va.units??-1)||(a.need_by||'9999').localeCompare(b.need_by||'9999');
+  });
+}
+function ideaCard(i){
+  const v=ideaValue(i),prods=(S.data.idea_links||[]).filter(l=>l.idea_id===i.id&&l.kind==='product').map(l=>prodById(l.target_id)?.part_number).filter(Boolean);
+  const nc=(S.data.idea_comments||[]).filter(c=>c.idea_id===i.id&&(canEdit()||!c.internal)).length;
+  return`<div class="icard" data-act="idea" data-id="${i.id}" ${canEdit()?`draggable="true" data-drag="${i.id}"`:''}>
+    <div class="row" style="justify-content:space-between;gap:6px"><span class="tag">${ITM[i.idea_type]||'Other'}</span>${i.pm_priority&&!isContrib()?`<span class="pill" style="--c:${i.pm_priority==='critical'?'#dc2626':i.pm_priority==='high'?'#ea580c':'#64748b'}">${PRIO.find(p=>p[0]===i.pm_priority)[1]}</span>`:''}</div>
+    <b class="ititle">${esc(i.title)}</b>
+    <div class="ival">${valueLine(i,v)}</div>
+    ${prods.length?`<div class="iprods">${prods.slice(0,3).map(p=>`<span class="chip">${esc(p)}</span>`).join('')}${prods.length>3?`<span class="mut">+${prods.length-3}</span>`:''}</div>`:''}
+    <div class="imeta"><span title="+1s">▲ ${v.votes}</span><span title="Comments">💬 ${nc}</span>${i.need_by?`<span title="Needed by">⏱ ${fmtMY(i.need_by)}</span>`:''}<span class="grow-sp"></span><span>${esc(who(i.submitted_by))}</span></div>
+  </div>`;
+}
+function ideasBody(){
+  if(!S.data.ideas)S.data.ideas=[];
+  const board=wide()&&S.iv.view!=='list';
+  const L=(S.data.ideas||[]).filter(ideaMatches);
+  const grp=IGROUPS.find(g=>g[0]===S.iv.grp)||IGROUPS[0];
+  const listL=ideaSort(L.filter(i=>grp[2].includes(i.status)));
+  const nWait=(S.data.ideas||[]).filter(i=>canEdit()?['new','under_review'].includes(i.status):(i.submitted_by===me()&&i.status==='needs_info')).length;
+  const tb=`<div class="ibar2">
+      ${board?'':`<div class="chips">${IGROUPS.map(([k,l,st])=>`<button class="chip ${S.iv.grp===k?'on':''}" data-act="igrp" data-arg="${k}">${l} <span class="cnt">${L.filter(i=>st.includes(i.status)).length}</span></button>`).join('')}</div>`}
+      <div class="chips">${ITYPE.map(([k,l])=>`<button class="chip fchip ${S.iv.type.includes(k)?'on':''}" data-act="itype" data-arg="${k}">${l}</button>`).join('')}
+        <button class="chip fchip ${S.iv.mine?'on':''}" data-act="imine">Mine</button>
+        <button class="chip fchip ${S.iv.waiting?'on':''}" data-act="iwait">Waiting on me${nWait?` <span class="cnt">${nWait}</span>`:''}</button></div>
+      <div class="row" style="gap:8px;margin-left:auto"><select id="isort" class="isort">${[['value','Sort: value & priority'],['votes','Sort: most +1s'],['new','Sort: newest'],['updated','Sort: recently updated']].map(([k,l])=>`<option value="${k}" ${S.iv.sort===k?'selected':''}>${l}</option>`).join('')}</select>
+      ${wide()?`<div class="segc vsw" style="min-width:150px"><button class="${board?'on':''}" data-act="iview" data-arg="board">Board</button><button class="${board?'':'on'}" data-act="iview" data-arg="list">List</button></div>`:''}</div>
+    </div>`;
+  let body;
+  if(!(S.data.ideas||[]).length)body=`<div class="card empty">No ideas yet. Tap <b>+ Idea</b> to add the first one — it takes under a minute.</div>`;
+  else if(board){
+    body=`<div class="iboard">${ICOLS.map(([k,l])=>{const st=k==='closed'?['parked','declined','duplicate']:[k];const C=ideaSort(L.filter(i=>st.includes(i.status)));
+      const val=C.reduce((s,i)=>s+(ideaValue(i).weighted||0),0);
+      return`<div class="icol" data-col="${k}"><div class="icolh"><span class="dot" style="background:${ISM[st[0]].c}"></span> ${l} <span class="cnt">${C.length}</span>${val?`<span class="mut ival2">~${kfmt(val)}/yr wtd</span>`:''}</div>${C.map(ideaCard).join('')||'<div class="icempty">—</div>'}</div>`}).join('')}</div>`;
+  }else body=listL.length?`<div class="ilist">${listL.map(i=>`<div class="iline">${ideaCard(i).replace('class="icard"','class="icard il"')}<div class="ilst">${iBadge(i.status)}</div></div>`).join('')}</div>`:'<div class="card empty">No ideas match.</div>';
+  return tb+body;
+}
+function viewIdeas(){
+  return`<div class="ibar"><input id="iq" type="search" placeholder="Search ideas, products, customers…" value="${esc(S.iv.q)}" autocomplete="off">
+    <button class="btn pri" data-act="ideanew">+ Idea</button></div><div id="iresults">${ideasBody()}</div>
+    <button class="fab" data-act="ideanew" aria-label="New idea">+</button>`;
+}
+function refreshIdeas(){saveView();const r=$('#iresults');if(r)r.innerHTML=ideasBody();else renderMain()}
+
+/* ---- saving helpers (live: database triggers log activity; demo: logged here) ---- */
+function demoLog(idea_id,action,detail={},internal=false){if(S.mode!=='demo')return;S.data.idea_activity.push({id:Date.now()+Math.random(),idea_id,actor:me(),action,detail,internal,created_at:new Date().toISOString()});
+  if(['created','comment','vote'].includes(action)&&!internal&&!S.data.idea_watchers.some(w=>w.idea_id===idea_id&&w.email===me()))S.data.idea_watchers.push({idea_id,email:me()});Demo.save(S.data)}
+async function refreshIdea(id){
+  if(S.mode==='demo')return;
+  const [a,i,w]=await Promise.all([S.sb.from('idea_activity').select('*').eq('idea_id',id),S.sb.from('ideas').select('*').eq('id',id).maybeSingle(),S.sb.from('idea_watchers').select('*').eq('idea_id',id)]);
+  if(!a.error)S.data.idea_activity=[...S.data.idea_activity.filter(x=>x.idea_id!==id),...(a.data||[])];
+  if(!w.error)S.data.idea_watchers=[...S.data.idea_watchers.filter(x=>x.idea_id!==id),...(w.data||[])];
+  if(!i.error&&i.data){const k=S.data.ideas.findIndex(x=>x.id===id);if(k>=0)S.data.ideas[k]=i.data;else S.data.ideas.push(i.data)}
+}
+async function ideaSave(table,row,log){
+  if(!row.id&&S.mode==='demo'){const d={ideas:'submitted_by',idea_votes:'voter',idea_comments:'author',idea_attachments:'added_by',idea_links:'created_by'}[table];if(d&&!row[d])row[d]=me();if(table==='ideas'&&!row.status)row.status='new'}
+  const out=await save(table,row);
+  const iid=table==='ideas'?out.id:out.idea_id||row.idea_id;
+  if(S.mode==='demo'&&log)demoLog(iid,...log);
+  await refreshIdea(iid);return out;
+}
+async function setStatus(id,to,extra={},reason){
+  const i=ideaById(id);if(!i)return;const from=i.status;
+  await ideaSave('ideas',{id,status:to,...extra},from!==to?['status',{from,to}]:null);
+  if(reason)await ideaSave('idea_comments',{idea_id:id,author:me(),body:`${ISM[to].l}: ${reason}`,internal:false},['comment',{}]);
+}
+function rerenderIdeas(){if(S.tab==='ideas')renderMain();renderSheet()}
+
+/* ---- pickers used in forms ---- */
+function prodPicker(sel){
+  const opts=prodList().slice().sort((a,b)=>a.part_number.localeCompare(b.part_number));
+  return`<div class="picker" data-picker="prod"><div class="chips wrap pchips">${sel.map(id=>{const p=prodById(id);return p?`<span class="chip on">${esc(p.part_number)}<input type="hidden" name="prod" value="${id}"><button type="button" class="x" data-act="pickrm">✕</button></span>`:''}).join('')}</div>
+    <select data-pick="prod"><option value="">+ Add a product…</option>${opts.map(p=>`<option value="${p.id}">${esc(p.part_number)} — ${esc(p.name||'')}</option>`).join('')}</select></div>`;
+}
+function custPicker(id,name){
+  const opts=custList().slice().sort((a,b)=>a.name.localeCompare(b.name)),other=!id&&name;
+  return`<select name="customer_id" data-cust><option value="">— none / not sure —</option>${opts.map(c=>`<option value="${c.id}" ${c.id===id?'selected':''}>${esc(c.name)}</option>`).join('')}<option value="__other" ${other?'selected':''}>Other (type the name)…</option></select>
+    <input name="customer_name" placeholder="Customer name" value="${esc(other?name:'')}" class="custother" ${other?'':'hidden'}>`;
+}
+function sizingFields(x){
+  const b=x.size_basis||'';
+  const radio=(name,val,label,cur)=>`<label class="chip rchip ${cur===val?'on':''}"><input type="radio" name="${name}" value="${val}" ${cur===val?'checked':''} hidden>${label}</label>`;
+  return`<div class="sizing">
+    <label class="l">How big is the opportunity? *</label>
+    <div class="chips wrap">${radio('size_basis','units','Units per year',b)}${radio('size_basis','revenue','Revenue per year',b)}${radio('size_basis','unknown',"Don't know yet",b)}</div>
+    ${['units','revenue'].map(k=>`<div class="szr" data-for="${k}" ${b===k?'':'hidden'}><div class="chips wrap" style="margin-top:8px">${RANGES[k].map(([r])=>radio('size_range_'+k,r,r,b===k?x.size_range:'')).join('')}</div>
+      <input name="size_exact_${k}" type="number" inputmode="decimal" step="any" placeholder="Exact ${k==='units'?'units / yr':'$ / yr'} (optional)" value="${b===k&&x.size_exact!=null?esc(x.size_exact):''}" style="margin-top:8px"></div>`).join('')}
+    <div class="szr" data-for="units revenue" ${b==='units'||b==='revenue'?'':'hidden'}><label class="l" style="margin-top:10px">How solid is it?</label>
+      <div class="chips wrap">${CONF.map(([k,l])=>radio('confidence',k,l,x.confidence||'')).join('')}</div></div>
+  </div>`;
+}
+function readSizing(f){
+  const fd=new FormData(f),b=fd.get('size_basis')||null;
+  if(!b)return{err:'Please say how big the opportunity is (or pick "Don\'t know yet").'};
+  if(b==='unknown')return{size_basis:'unknown',size_range:null,size_exact:null,confidence:null};
+  const r=fd.get('size_range_'+b),ex=fd.get('size_exact_'+b);
+  if(!r&&!ex)return{err:'Pick a size range (or type an exact figure).'};
+  return{size_basis:b,size_range:r||null,size_exact:ex===''||ex==null?null:+ex,confidence:fd.get('confidence')||'estimate'};
+}
+function readCustomer(f){const fd=new FormData(f),c=fd.get('customer_id');return c==='__other'?{customer_id:null,customer_name:(fd.get('customer_name')||'').trim()||null}:{customer_id:c||null,customer_name:null}}
+
+/* ---- sheets ---- */
+Object.assign(SHEETS,{
+ ideaform(e){
+  const i=e.id?ideaById(e.id):{idea_type:'',program_years:5};if(!i)return null;
+  const prods=e.id?(S.data.idea_links||[]).filter(l=>l.idea_id===i.id&&l.kind==='product').map(l=>l.target_id):(e.product?[e.product]:[]);
+  return{title:e.id?'Edit idea':'New idea',right:`<button class="btn ghost" type="submit" form="ideafrm"><b>${e.id?'Save':'Submit'}</b></button>`,body:`
+   <form id="ideafrm">
+    ${e.id?'':`<p class="mut" style="margin-top:0">Takes under a minute. The product team will follow up — you'll see every status change and comment here.</p>`}
+    <div class="field"><label class="l">Idea *</label><input name="title" required value="${esc(i.title||'')}" placeholder="e.g. CAN FD on ioBLOC modules"></div>
+    <div class="field"><label class="l">What's the customer problem or opportunity? *</label><textarea name="problem" required placeholder="Who needs it, what they're trying to do, what happens today without it">${esc(i.problem||'')}</textarea></div>
+    <div class="field"><label class="l">Type *</label><div class="chips wrap">${ITYPE.map(([k,l])=>`<label class="chip rchip ${i.idea_type===k?'on':''}"><input type="radio" name="idea_type" value="${k}" ${i.idea_type===k?'checked':''} hidden>${l}</label>`).join('')}</div></div>
+    ${sizingFields(i)}
+    <div class="grid2">
+      <div class="field"><label class="l">Customer</label>${custPicker(i.customer_id,i.customer_name)}</div>
+      <div class="field"><label class="l">Needed by</label><input name="need_by" type="month" value="${i.need_by?String(i.need_by).slice(0,7):''}"></div>
+    </div>
+    <div class="field"><label class="l">Related products</label>${prodPicker(prods)}</div>
+    <details ${i.proposed_solution||i.market||e.id?'open':''}><summary class="mut" style="cursor:pointer;margin:6px 0 10px">More detail (optional)</summary>
+      <div class="field"><label class="l">Proposed solution</label><textarea name="proposed_solution">${esc(i.proposed_solution||'')}</textarea></div>
+      <div class="grid2"><div class="field"><label class="l">Market</label><select name="market"><option value="">—</option>${(S.data.markets||[]).map(m=>`<option ${i.market===m.name?'selected':''}>${esc(m.name)}</option>`).join('')||['Agriculture','Construction','Mining','Marine','Vocational','Utility vehicles'].map(m=>`<option ${i.market===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="field"><label class="l">Years in production</label><input name="program_years" type="number" min="1" max="30" value="${esc(i.program_years||5)}"></div></div>
+    </details>
+    <div id="ierr" style="color:var(--bad);font-size:13px"></div>
+    <button class="btn pri block">${e.id?'Save changes':'Submit idea'}</button>
+   </form>`};
+ },
+ ideavote(e){
+  const i=ideaById(e.id);if(!i)return null;
+  const mine=(S.data.idea_votes||[]).find(v=>v.id===e.vote)||{};
+  return{title:mine.id?'Edit your +1':'+1 this idea',body:`<form id="ideavotefrm">
+    <p class="mut" style="margin-top:0"><b>${esc(i.title)}</b><br>Tell us which customer needs this too and roughly how much. One entry per customer — adding the same customer again updates it.</p>
+    <div class="field"><label class="l">Customer</label>${custPicker(mine.customer_id,mine.customer_name)}</div>
+    ${sizingFields(mine)}
+    <div class="field" style="margin-top:12px"><label class="l">Note</label><textarea name="note" placeholder="Context: program, timing, competitor they're considering…">${esc(mine.note||'')}</textarea></div>
+    <div id="ierr" style="color:var(--bad);font-size:13px"></div>
+    <button class="btn pri block">${mine.id?'Save':'Add my +1'}</button>
+    ${mine.id?`<button type="button" class="btn danger block" data-act="ivotedel" data-id="${mine.id}">Remove my +1</button>`:''}</form>`};
+ },
+ ideastatus(e){
+  const i=ideaById(e.id);if(!i)return null;const to=e.to;
+  const others=(S.data.ideas||[]).filter(x=>x.id!==i.id&&x.status!=='duplicate').sort((a,b)=>a.title.localeCompare(b.title));
+  const need={needs_info:'What do you need from the submitter? *',declined:'Why is it declined? (the submitter will see this) *',parked:'Why park it? (optional)',duplicate:'Note (optional)'}[to];
+  return{title:`Move to ${ISM[to].l}`,body:`<form id="ideastatusfrm">
+    <p class="mut" style="margin-top:0"><b>${esc(i.title)}</b> · ${iBadge(i.status)} → ${iBadge(to)}</p>
+    ${to==='duplicate'?`<div class="field"><label class="l">Duplicate of *</label><select name="duplicate_of" required><option value="">—</option>${others.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join('')}</select>
+      <div class="mut" style="font-size:12px;margin-top:4px">Its sizing and +1s will count toward that idea.</div></div>`:''}
+    ${to==='parked'?`<div class="field"><label class="l">Revisit by</label><input name="revisit_by" type="date"></div>`:''}
+    ${need?`<div class="field"><label class="l">${need}</label><textarea name="reason" ${/\*$/.test(need)?'required':''}></textarea></div>`:''}
+    <button class="btn pri block">Move to ${ISM[to].l}</button></form>`};
+ },
+ idea(e){
+  const i=ideaById(e.id);if(!i)return null;
+  const v=ideaValue(i),mine=i.submitted_by===me(),pm=canEdit();
+  const links=(S.data.idea_links||[]).filter(l=>l.idea_id===i.id);
+  const prods=links.filter(l=>l.kind==='product'),devs=links.filter(l=>l.kind==='dev_item').map(l=>({l,d:(S.data.dev_items||[]).find(x=>x.id===l.target_id)})).filter(x=>x.d);
+  const votes=(S.data.idea_votes||[]).filter(x=>x.idea_id===i.id),myVote=votes.find(x=>x.voter===me());
+  const atts=(S.data.idea_attachments||[]).filter(a=>a.idea_id===i.id);
+  const watching=(S.data.idea_watchers||[]).some(w=>w.idea_id===i.id&&w.email===me());
+  const canEditIdea=pm||(mine&&['new','needs_info'].includes(i.status));
+  const comments=(S.data.idea_comments||[]).filter(c=>c.idea_id===i.id&&(pm||!c.internal));
+  const acts=(S.data.idea_activity||[]).filter(a=>a.idea_id===i.id&&a.action!=='comment'&&(pm||!a.internal));
+  const tl=[...comments.map(c=>({t:c.created_at,c})),...acts.map(a=>({t:a.created_at,a}))].sort((a,b)=>String(a.t).localeCompare(String(b.t)));
+  const actTxt=a=>({created:'submitted this idea',edit:'edited the idea',vote:`added a +1${a.detail?.customer&&!/^[0-9a-f-]{36}$/.test(a.detail.customer)?' for '+esc(a.detail.customer):''}`,attachment:`added “${esc(a.detail?.label||'a link')}”`,
+    link:`linked a ${a.detail?.kind==='dev_item'?'roadmap item':a.detail?.kind||'record'}`,status:`moved it ${a.detail?.from?'from '+(ISM[a.detail.from]?.l||a.detail.from)+' ':''}to <b>${ISM[a.detail?.to]?.l||a.detail?.to}</b>`})[a.action]||esc(a.action);
+  const devHint=devs.length&&['accepted','under_review'].includes(i.status)&&devs.some(x=>x.d.status==='in_progress')?'in_progress':devs.length&&i.status==='in_progress'&&devs.every(x=>['done','cancelled'].includes(x.d.status))?'delivered':null;
+  const isImg=a=>a.kind==='image'||/\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(a.url);
+  return{title:'Idea',right:`<button class="btn ghost sm" data-act="iwatch" data-id="${i.id}">${watching?'★ Following':'☆ Follow'}</button>`,body:`
+   <div class="hero"><div class="row" style="flex-wrap:wrap;gap:6px">${iBadge(i.status)}<span class="tag">${ITM[i.idea_type]||'Other'}</span>${i.pm_priority&&!isContrib()?`<span class="tag">Priority: ${PRIO.find(p=>p[0]===i.pm_priority)[1]}</span>`:''}</div>
+     <h2 style="margin-top:8px">${esc(i.title)}</h2><div class="mut">Submitted by ${esc(who(i.submitted_by))} · ${fmt(String(i.created_at).slice(0,10))}</div></div>
+   ${i.status==='needs_info'&&mine?`<div class="banner" style="margin-top:12px">The product team needs more information — reply in the comments below, then <button class="btn sm pri" data-act="ireply" data-id="${i.id}">Send back for review</button></div>`:''}
+   ${i.status==='duplicate'&&i.duplicate_of?`<div class="banner" style="margin-top:12px">Merged into <a href="#" data-act="idea" data-id="${i.duplicate_of}">${esc(ideaById(i.duplicate_of)?.title||'another idea')}</a></div>`:''}
+   ${i.status==='declined'&&i.decision_note?`<div class="banner" style="margin-top:12px"><b>Decision:</b> ${esc(i.decision_note)}</div>`:''}
+   <div class="sec"><h2>Opportunity</h2><button class="btn sm ${myVote?'':'pri'}" data-act="ivote" data-id="${i.id}" ${myVote?`data-vote="${myVote.id}"`:''}>${myVote?'Edit my +1':'▲ My customer needs this too'}</button></div>
+   <div class="card kv">${kvItem('Value / year',v.rev!=null?'~'+kfmt(v.rev)+(v.uOnly?` <span class="mut">+ ${ufmt(v.uOnly)} units</span>`:''):v.units!=null?'~'+ufmt(v.units)+' units':'<span class="needsz">Needs sizing</span>',[v.weighted!=null?`${kfmt(v.weighted)} weighted by confidence`:'',v.uOnly&&!isContrib()?'link a product with a list price to value units in $':''].filter(Boolean).join(' · '))}
+     ${kvItem('Lifetime',v.lifetime!=null?'~'+kfmt(v.lifetime):'—',v.lifetime!=null?`${v.years} years in production`:'')}
+     ${kvItem('Customers sized',String(v.customers||0),v.firm?`${v.firm} firm`:'')}${kvItem('+1s',String(v.votes))}
+     ${kvItem('Needed by',i.need_by?fmtMY(i.need_by):'—',i.need_by?relTxt(i.need_by):'')}${kvItem('Market',esc(i.market||'—'))}</div>
+   <div class="sec"><h2>Details</h2>${canEditIdea?`<button class="btn ghost sm" data-act="ideaedit" data-id="${i.id}">Edit</button>`:''}</div>
+   <div class="card"><div class="mut" style="font-size:12px">Customer problem / opportunity</div><div class="pre">${esc(i.problem||'—')}</div>
+     ${i.proposed_solution?`<div class="mut" style="font-size:12px;margin-top:10px">Proposed solution</div><div class="pre">${esc(i.proposed_solution)}</div>`:''}
+     ${i.customer_id||i.customer_name?`<div class="mut" style="font-size:12px;margin-top:10px">Customer</div><div>${esc(custName(i.customer_id,i.customer_name))}</div>`:''}
+     <div class="mut" style="font-size:12px;margin-top:10px">Related products</div><div class="chips wrap" style="margin-top:4px">${prods.map(l=>{const p=prodById(l.target_id);return p?`<span class="chip" ${isContrib()?'':`data-act="product" data-id="${p.id}"`}>${esc(p.part_number)}</span>`:''}).join('')||'<span class="mut">None yet</span>'}</div></div>
+   ${pm?`<div class="sec"><h2>Product manager</h2></div><div class="card pmcard"><form id="ideapmfrm" data-id="${i.id}">
+     <div class="grid2"><div class="field"><label class="l">Status</label><select name="status" data-istatus="${i.id}">${IST.map(([k,l])=>`<option value="${k}" ${i.status===k?'selected':''}>${l}</option>`).join('')}</select></div>
+     <div class="field"><label class="l">PM priority</label><select name="pm_priority"><option value="">—</option>${PRIO.map(([k,l])=>`<option value="${k}" ${i.pm_priority===k?'selected':''}>${l}</option>`).join('')}</select></div>
+     <div class="field"><label class="l">Owner</label><input name="owner" value="${esc(i.owner||'')}" placeholder="Who drives it"></div>
+     <div class="field"><label class="l">Revisit by</label><input name="revisit_by" type="date" value="${esc(i.revisit_by||'')}"></div></div>
+     <div class="field"><label class="l">Decision note</label><textarea name="decision_note" placeholder="Rationale, supplier feedback summary…">${esc(i.decision_note||'')}</textarea></div>
+     <button class="btn pri sm">Save PM fields</button></form>
+     ${devHint?`<div class="banner" style="margin:10px 0 0">Linked roadmap work is ${devHint==='in_progress'?'in progress':'finished'} — <button class="btn sm" data-act="istatusgo" data-id="${i.id}" data-arg="${devHint}">Move to ${ISM[devHint].l}</button></div>`:''}
+     <div class="mut" style="font-size:12px;margin-top:12px">Product roadmap items</div>
+     ${devs.map(({d})=>{const p=byId('products',d.product_id);return`<div class="ev" data-act="product" data-id="${d.product_id}"><div class="grow"><b>${esc(d.title)}</b><div class="mut">${esc(p?.part_number||'')} · ${fmtMY(d.start_date)} – ${fmtMY(d.end_date)}</div></div><span class="tag">${(DEVS.find(s=>s.k===d.status)||{}).l||d.status}</span></div>`}).join('')||'<div class="mut">None yet.</div>'}
+     <button class="btn sm" data-act="idev" data-id="${i.id}" style="margin-top:8px">+ Create roadmap item from this idea</button></div>`:''}
+   <div class="sec"><h2>+1s · ${votes.length}</h2></div>
+   ${votes.length?`<div class="card">${votes.map(x=>{const s=sizingRev(x,null);return`<div class="ev"><div class="grow"><b>${esc(who(x.voter))}</b>${x.customer_id||x.customer_name?` · ${esc(custName(x.customer_id,x.customer_name))}`:''}
+      <div class="mut">${x.size_basis&&x.size_basis!=='unknown'?`${x.size_range||''}${x.size_exact!=null?' ('+(x.size_basis==='revenue'?kfmt(+x.size_exact):ufmt(+x.size_exact)+' units')+')':''} ${x.size_basis==='units'?'units':''}/yr · ${(CONF.find(c=>c[0]===x.confidence)||[,'Estimate'])[1]}`:'Size not known yet'}</div>
+      ${x.note?`<div class="pre" style="font-size:13px;margin-top:2px">${esc(x.note)}</div>`:''}</div></div>`}).join('')}</div>`:'<div class="card empty" style="padding:14px">No +1s yet.</div>'}
+   <div class="sec"><h2>Links & images</h2></div>
+   <div class="card">${atts.map(a=>`<div class="att">${isImg(a)?`<a href="${esc(a.url)}" target="_blank" rel="noopener"><img src="${esc(a.url)}" alt="${esc(a.label)}" loading="lazy" onerror="this.parentNode.classList.add('noimg');this.remove()"></a>`:''}
+      <a class="attl" href="${esc(a.url)}" target="_blank" rel="noopener">${a.kind==='image'?'🖼':a.kind==='document'?'📄':'🔗'} ${esc(a.label)} ↗</a><span class="mut" style="font-size:11.5px">${esc(who(a.added_by))}</span>
+      ${a.added_by===me()||pm?`<button class="btn ghost sm" data-act="iattdel" data-id="${a.id}" aria-label="Remove">✕</button>`:''}</div>`).join('')||'<div class="mut" style="margin-bottom:8px">Paste links to photos, documents or pages (SharePoint, OneDrive, Teams, supplier portals). Only the link is stored.</div>'}
+     <form id="ideaattfrm" data-id="${i.id}" class="attform"><input name="label" placeholder="Label (e.g. Customer drawing)" required><input name="url" type="url" placeholder="https://…" required>
+       <select name="kind"><option value="link">Link</option><option value="image">Image</option><option value="document">Document</option></select><button class="btn sm">Add</button></form></div>
+   <div class="sec"><h2>Activity & comments</h2></div>
+   <div class="card itl">${tl.map(x=>x.c?`<div class="tlc ${x.c.internal?'internal':''}"><div class="tlh"><b>${esc(who(x.c.author))}</b> <span class="mut">${ago(x.t)}</span>${x.c.internal?' <span class="pill" style="--c:#7c3aed">Internal note</span>':''}</div><div class="pre">${esc(x.c.body)}</div></div>`
+      :`<div class="tla"><span class="mut">${esc(who(x.a.actor))} ${actTxt(x.a)} · ${ago(x.t)}</span></div>`).join('')||'<div class="mut">No activity yet.</div>'}
+     <form id="ideacmtfrm" data-id="${i.id}" style="margin-top:10px"><textarea name="body" placeholder="Add a comment…" required style="min-height:64px"></textarea>
+       <div class="row" style="justify-content:space-between;margin-top:6px">${pm?'<label class="tg"><input type="checkbox" name="internal"> Internal note (PM team only)</label>':'<span></span>'}<button class="btn pri sm">Post</button></div></form></div>
+   ${pm?`<button class="btn danger block" data-act="ideadel" data-id="${i.id}" style="margin-top:18px">Delete idea</button>`:''}`};
+ }
+});
+
+/* ---- product page: ideas linked to a product ---- */
+function productIdeas(p){
+  const L=(S.data.idea_links||[]).filter(l=>l.kind==='product'&&l.target_id===p.id).map(l=>ideaById(l.idea_id)).filter(Boolean);
+  return`<div class="sec"><h2>Ideas${L.length?' · '+L.length:''}</h2><button class="btn ghost sm" data-act="ideanew" data-arg="${p.id}">+ Idea</button></div>`+
+   (L.length?`<div class="card">${ideaSort(L).map(i=>`<div class="ev" data-act="idea" data-id="${i.id}"><div class="grow"><b>${esc(i.title)}</b><div class="mut">${valueLine(i)}</div></div>${iBadge(i.status)}</div>`).join('')}</div>`:'<div class="card empty" style="padding:14px">No ideas linked to this product.</div>');
+}
+
+
+/* ---- small data helpers for idea child rows ---- */
+async function delRow(table,id){
+  if(S.mode==='demo'){S.data[table]=S.data[table].filter(x=>x.id!==id);Demo.save(S.data);return}
+  const{error}=await S.sb.from(table).delete().eq('id',id);if(error)throw error;
+  S.data[table]=S.data[table].filter(x=>x.id!==id);
+}
+const vkey=x=>x.customer_id||(x.customer_name||'').trim().toLowerCase()||('by:'+(x.voter||me()));
+function onStatusPick(id,to){
+  const i=ideaById(id);if(!i||i.status===to)return;
+  if(['needs_info','declined','duplicate','parked'].includes(to))return push({type:'ideastatus',id,to});
+  setStatus(id,to).then(()=>{toast('Moved to '+ISM[to].l);rerenderIdeas()}).catch(err=>toast(errMsg(err)));
+}
+
+Object.assign(A,{
+ idea:id=>push({type:'idea',id}),
+ ideanew:(id,arg)=>push({type:'ideaform',product:arg||null}),
+ ideaedit:id=>push({type:'ideaform',id}),
+ igrp:(id,k)=>{S.iv.grp=k;refreshIdeas()},
+ itype:(id,k)=>{const L=S.iv.type,j=L.indexOf(k);if(j>=0)L.splice(j,1);else L.push(k);refreshIdeas()},
+ imine:()=>{S.iv.mine=!S.iv.mine;refreshIdeas()},
+ iwait:()=>{S.iv.waiting=!S.iv.waiting;refreshIdeas()},
+ iview:(id,k)=>{S.iv.view=k;refreshIdeas()},
+ ivote:(id,arg,el)=>push({type:'ideavote',id,vote:el.dataset.vote||null}),
+ async ivotedel(id){if(!confirm('Remove your +1?'))return;try{await delRow('idea_votes',id);S.stack.pop();toast('Removed');rerenderIdeas()}catch(e){toast(errMsg(e))}},
+ async ireply(id){try{await setStatus(id,'under_review');toast('Sent back to the product team');rerenderIdeas()}catch(e){toast(errMsg(e))}},
+ async istatusgo(id,to){try{await setStatus(id,to);toast('Moved to '+ISM[to].l);rerenderIdeas()}catch(e){toast(errMsg(e))}},
+ async iwatch(id){
+  const on=S.data.idea_watchers.some(w=>w.idea_id===id&&w.email===me());
+  try{
+   if(S.mode!=='demo'){const q=on?S.sb.from('idea_watchers').delete().eq('idea_id',id).eq('email',me()):S.sb.from('idea_watchers').insert({idea_id:id,email:me()});const{error}=await q;if(error)throw error}
+   S.data.idea_watchers=on?S.data.idea_watchers.filter(w=>!(w.idea_id===id&&w.email===me())):[...S.data.idea_watchers,{idea_id:id,email:me()}];
+   if(S.mode==='demo')Demo.save(S.data);
+   toast(on?'Unfollowed':'Following — you\'ll be notified of changes once notifications are on');renderSheet();
+  }catch(e){toast(errMsg(e))}},
+ idev(id){const i=ideaById(id);if(!i)return;const pl=(S.data.idea_links||[]).find(l=>l.idea_id===id&&l.kind==='product');
+  push({type:'form',table:'dev_items',fromIdea:id,defaults:{product_id:pl?.target_id||null,title:i.title,details:i.problem,kind:i.idea_type==='software'?'feature':'feature',status:'planned'}})},
+ async iattdel(id){try{await delRow('idea_attachments',id);rerenderIdeas()}catch(e){toast(errMsg(e))}},
+ async ideadel(id){if(!confirm('Delete this idea, its comments and +1s? This cannot be undone.'))return;
+  try{await remove('ideas',id);S.stack.pop();toast('Deleted');rerenderIdeas()}catch(e){toast(errMsg(e))}},
+ pickrm:(id,arg,el)=>el.closest('.chip')?.remove()
+});
+
+/* ---- form controls ---- */
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.type==='radio'&&t.closest('label.rchip')){
+    t.form?.querySelectorAll(`input[name="${t.name}"]`).forEach(r=>r.closest('label.rchip')?.classList.toggle('on',r.checked));
+    if(t.name==='size_basis'){const box=t.closest('.sizing');box.querySelectorAll('.szr').forEach(z=>z.hidden=!z.dataset.for.split(' ').includes(t.value))}
+    return}
+  if(t.dataset.pick==='prod'){const v=t.value;t.value='';if(!v)return;const box=t.closest('.picker').querySelector('.pchips');
+    if(box.querySelector(`input[value="${v}"]`))return;const p=prodById(v);
+    box.insertAdjacentHTML('beforeend',`<span class="chip on">${esc(p.part_number)}<input type="hidden" name="prod" value="${v}"><button type="button" class="x" data-act="pickrm">✕</button></span>`);return}
+  if(t.hasAttribute('data-cust')){const o=t.parentNode.querySelector('.custother');if(o){o.hidden=t.value!=='__other';if(!o.hidden)o.focus()}return}
+  if(t.id==='isort'){S.iv.sort=t.value;refreshIdeas();return}
+  if(t.dataset.istatus){const id=t.dataset.istatus,to=t.value;t.value=ideaById(id).status;onStatusPick(id,to);return}
+});
+document.addEventListener('input',e=>{if(e.target.id==='iq'){S.iv.q=e.target.value;clearTimeout(refreshIdeas.t);refreshIdeas.t=setTimeout(refreshIdeas,120)}});
+
+/* ---- board drag & drop (desktop, editors) ---- */
+document.addEventListener('dragstart',e=>{const c=e.target.closest?.('[data-drag]');if(!c)return;hovHide();e.dataTransfer.setData('text/plain',c.dataset.drag);e.dataTransfer.effectAllowed='move';c.classList.add('dragging')});
+document.addEventListener('dragend',e=>{e.target.classList?.remove('dragging');document.querySelectorAll('.icol.over').forEach(x=>x.classList.remove('over'))});
+document.addEventListener('dragover',e=>{const col=e.target.closest?.('.icol');if(!col||!canEdit())return;e.preventDefault();document.querySelectorAll('.icol.over').forEach(x=>x!==col&&x.classList.remove('over'));col.classList.add('over')});
+document.addEventListener('drop',e=>{const col=e.target.closest?.('.icol');if(!col)return;e.preventDefault();col.classList.remove('over');
+  const id=e.dataTransfer.getData('text/plain'),i=ideaById(id);if(!i)return;let to=col.dataset.col;
+  if(to==='closed'){if(['parked','declined','duplicate'].includes(i.status))return;to='parked'}
+  onStatusPick(id,to)});
+
+/* ---- idea form submissions ---- */
+document.addEventListener('submit',async e=>{
+  const f=e.target;if(!/^idea/.test(f.id))return;e.preventDefault();
+  const top=S.stack[S.stack.length-1],fd=new FormData(f),err=f.querySelector('#ierr'),btn=f.querySelector('button.pri:not([type=button])');
+  const fail=m=>{if(err)err.textContent=m;else toast(m)};
+  const busy=b=>{if(btn)btn.disabled=b};
+  try{
+  if(f.id==='ideafrm'){
+    if(!fd.get('idea_type'))return fail('Pick a type.');
+    const sz=readSizing(f);if(sz.err)return fail(sz.err);
+    const nb=fd.get('need_by');if(nb&&!/^\d{4}-\d{2}/.test(nb))return fail('Needed by: use YYYY-MM.');
+    const o={title:fd.get('title').trim(),problem:fd.get('problem').trim(),idea_type:fd.get('idea_type'),...sz,...readCustomer(f),
+      need_by:nb?nb.slice(0,7)+'-01':null,proposed_solution:(fd.get('proposed_solution')||'').trim()||null,market:fd.get('market')||null,program_years:+fd.get('program_years')||5};
+    if(top.id)o.id=top.id;busy(true);
+    const out=await ideaSave('ideas',o,top.id?['edit',{}]:['created',{title:o.title}]);
+    const want=[...new Set(fd.getAll('prod'))],have=(S.data.idea_links||[]).filter(l=>l.idea_id===out.id&&l.kind==='product');
+    for(const pid of want.filter(x=>!have.some(l=>l.target_id===x)))await ideaSave('idea_links',{idea_id:out.id,kind:'product',target_id:pid},['link',{kind:'product'}]);
+    for(const l of have.filter(l=>!want.includes(l.target_id)))await delRow('idea_links',l.id).catch(()=>{});
+    S.stack.pop();
+    if(top.id)toast('Saved');else{toast('Idea submitted — thanks!');S.stack.push({type:'idea',id:out.id})}
+    return rerenderIdeas();
+  }
+  if(f.id==='ideavotefrm'){
+    const sz=readSizing(f);if(sz.err)return fail(sz.err);
+    const o={idea_id:top.id,...readCustomer(f),...sz,note:(fd.get('note')||'').trim()||null};
+    const k=vkey({...o,voter:me()}),clash=S.data.idea_votes.find(v=>v.idea_id===top.id&&v.id!==top.vote&&vkey(v)===k);
+    if(clash){if(clash.voter===me()&&!top.vote)o.id=clash.id;else return fail(`${who(clash.voter)} already added a +1 for this customer — add a comment instead.`)}
+    else if(top.vote)o.id=top.vote;
+    busy(true);await ideaSave('idea_votes',o,o.id?null:['vote',{customer:o.customer_name||custName(o.customer_id)}]);
+    S.stack.pop();toast(o.id?'Saved':'+1 added');return rerenderIdeas();
+  }
+  if(f.id==='ideastatusfrm'){
+    const to=top.to,reason=(fd.get('reason')||'').trim(),x={};
+    if(to==='duplicate'){if(!fd.get('duplicate_of'))return fail('Pick the original idea.');x.duplicate_of=fd.get('duplicate_of')}
+    if(to==='parked')x.revisit_by=fd.get('revisit_by')||null;
+    if(to==='declined')x.decision_note=reason;
+    busy(true);await setStatus(top.id,to,x,reason||null);
+    S.stack.pop();toast('Moved to '+ISM[to].l);return rerenderIdeas();
+  }
+  if(f.id==='ideapmfrm'){
+    busy(true);await ideaSave('ideas',{id:f.dataset.id,pm_priority:fd.get('pm_priority')||null,owner:(fd.get('owner')||'').trim()||null,revisit_by:fd.get('revisit_by')||null,decision_note:(fd.get('decision_note')||'').trim()||null});
+    toast('Saved');busy(false);return rerenderIdeas();
+  }
+  if(f.id==='ideaattfrm'){
+    const url=(fd.get('url')||'').trim();if(!/^https?:\/\//i.test(url))return toast('Links must start with https://');
+    busy(true);await ideaSave('idea_attachments',{idea_id:f.dataset.id,label:fd.get('label').trim(),url,kind:fd.get('kind')||'link',added_by:me()},['attachment',{label:fd.get('label').trim()}]);
+    toast('Link added');return rerenderIdeas();
+  }
+  if(f.id==='ideacmtfrm'){
+    const body=(fd.get('body')||'').trim();if(!body)return;const internal=!!fd.get('internal');
+    busy(true);await ideaSave('idea_comments',{idea_id:f.dataset.id,author:me(),body,internal},['comment',{},internal]);
+    return rerenderIdeas();
+  }
+  }catch(x){busy(false);fail(errMsg(x))}
+});
+
+/* ---- sample ideas for demo mode ---- */
+function seedIdeas(x){
+  const P=re=>(x.products.find(p=>re.test(p.part_number))||x.products[0]||{}).id,C=n=>(x.customers[n]||{}).id||null;
+  const day=n=>new Date(Date.now()-n*864e5).toISOString();
+  const I=(o,n)=>({id:uid(),status:'new',program_years:5,created_at:day(n),updated_at:day(Math.max(0,n-3)),...o});
+  const a=I({title:'CAN FD on I/O expansion modules',problem:'OEMs moving to CAN FD backbones want I/O modules that keep up. Today they run a separate classic-CAN segment just for the modules.',idea_type:'hardware',status:'under_review',size_basis:'units',size_range:'2k–10k',confidence:'stated',customer_id:C(0),need_by:'2027-09-01',market:'Construction',submitted_by:'sales.east@stw-technic.com',pm_priority:'high'},20);
+  const b=I({title:'Secure boot on the telematics gateway',problem:'Two customers asked for proof of secure boot and signed firmware as part of their cybersecurity reviews (ISO/SAE 21434).',idea_type:'software',status:'accepted',size_basis:'revenue',size_range:'$100–500k',confidence:'firm',customer_id:C(1),need_by:'2027-03-01',submitted_by:'support@stw-technic.com',pm_priority:'critical',owner:'Product management'},45);
+  const c=I({title:'Pre-wired harness kit for display + controller',problem:'Small builders spend days making a harness for a display and controller pair. A ready-to-install kit would shorten their first prototype.',idea_type:'product_kit',status:'needs_info',size_basis:'unknown',submitted_by:'demo@local'},9);
+  const d=I({title:'Remote diagnostics dashboard for dealers',problem:'Dealers want to see fault codes before the truck arrives at the shop.',idea_type:'service',status:'new',size_basis:'revenue',size_range:'$25–100k',confidence:'estimate',customer_name:'Regional dealer group',submitted_by:'sales.west@stw-technic.com'},3);
+  const e=I({title:'IP69K variant of the camera',problem:'Wash-down applications (food processing, municipal) need IP69K.',idea_type:'hardware',status:'parked',size_basis:'units',size_range:'100–500',confidence:'estimate',submitted_by:'sales.east@stw-technic.com',revisit_by:'2027-06-30',decision_note:'Supplier has no IP69K housing planned before 2028.'},80);
+  x.ideas=[a,b,c,d,e];
+  x.idea_links=[{id:uid(),idea_id:a.id,kind:'product',target_id:P(/ioBLOC 8/i),created_by:'sales.east@stw-technic.com'},{id:uid(),idea_id:b.id,kind:'product',target_id:P(/TCG/i),created_by:'support@stw-technic.com'},{id:uid(),idea_id:e.id,kind:'product',target_id:P(/Velos|cam/i),created_by:'sales.east@stw-technic.com'}].filter(l=>l.target_id);
+  x.idea_votes=[{id:uid(),idea_id:a.id,voter:'sales.west@stw-technic.com',customer_id:C(2),size_basis:'units',size_range:'500–2k',confidence:'firm',note:'Nominated for their 2028 platform if available by Q3 2027.',created_at:day(12)},
+    {id:uid(),idea_id:b.id,voter:'sales.east@stw-technic.com',customer_id:C(3),size_basis:'unknown',created_at:day(30)}];
+  x.idea_comments=[{id:uid(),idea_id:a.id,author:'pm@stw-technic.com',body:'Asked Marlin whether ioBLOC 8 hardware can support CAN FD with a firmware update.',internal:false,created_at:day(10)},
+    {id:uid(),idea_id:a.id,author:'pm@stw-technic.com',body:'Marlin hinted at a cost adder of ~8% — keep this internal until confirmed.',internal:true,created_at:day(6)},
+    {id:uid(),idea_id:c.id,author:'pm@stw-technic.com',body:'Needs info: Which display and controller pair, and roughly how many kits per year?',internal:false,created_at:day(7)}];
+  x.idea_attachments=[];
+  x.idea_activity=[];
+  [a,b,c,d,e].forEach(i=>{x.idea_activity.push({id:uid(),idea_id:i.id,actor:i.submitted_by,action:'created',detail:{},internal:false,created_at:i.created_at});
+    if(i.status!=='new')x.idea_activity.push({id:uid(),idea_id:i.id,actor:'pm@stw-technic.com',action:'status',detail:{from:'new',to:i.status},internal:false,created_at:i.updated_at})});
+  x.idea_watchers=[{idea_id:c.id,email:'demo@local'}];
+}
 
 /* ---------- timeline quick-look card (hover on desktop, long-press on phone) ---------- */
 function upcomingFor(p,n){
@@ -1400,7 +1914,9 @@ document.addEventListener('submit',async e=>{
     if(top.table==='transitions'&&o.from_product_id===o.to_product_id)return toast('From and To must be different products.');
     if(top.id)o.id=top.id;
     const oldMarket=top.table==='markets'&&top.id?byId('markets',top.id)?.name:null;
-    try{await save(top.table,o);
+    try{const saved=await save(top.table,o);
+      if(top.fromIdea&&saved?.id){await ideaSave('idea_links',{idea_id:top.fromIdea,kind:'dev_item',target_id:saved.id},['link',{kind:'dev_item'}]);
+        if(['new','under_review','needs_info'].includes(ideaById(top.fromIdea)?.status))await setStatus(top.fromIdea,'accepted')}
       if(oldMarket&&o.name&&oldMarket!==o.name)await renameMarket(oldMarket,o.name);
       toast('Saved');S.stack.pop();renderMain();renderSheet()}catch(err){toast(errMsg(err))}
   }
@@ -1428,7 +1944,7 @@ async function afterLogin(){
     const{data:m,error}=await S.sb.from('members').select('role').maybeSingle();
     if(error)throw error;
     if(!m)return renderMsg('No access yet',`${S.user.email} isn't on the roadmap team list. Ask an admin to add you to roadmap.members.`);
-    S.role=m.role;await loadAll();renderAll();
+    S.role=m.role;if(isContrib())S.tab='ideas';await loadAll();renderAll();
   }catch(e){renderMsg('Could not load data',errMsg(e))}
 }
 async function init(){
@@ -1439,7 +1955,9 @@ async function init(){
     if(!session)return renderLogin();
     S.user=session.user;return afterLogin();
   }
-  S.mode='demo';S.role='admin';await loadAll();renderAll();
+  S.mode='demo';S.role='admin';
+  const pr=new URLSearchParams(location.search).get('role');if(['contributor','viewer','editor'].includes(pr))S.role=pr;
+  await loadAll();renderAll();
 }
 init();
 </script>
